@@ -83,7 +83,7 @@ body{
 </style></head>
 <body>
 <div class="paper">
-  <img class="logo" src="https://i.imgur.com/8QmQ2Yh.jpeg" alt="shield">
+  <img class="logo" src="/static/logo.jpeg" alt="shield">
   <!-- ЗАМЕНИ ССЫЛКУ ВЫШЕ НА СВОЮ КАРТИНКУ: после загрузки в GitHub поставь /static/logo.jpg -->
   <div style="font-size:50px; margin-top:-20px">🛡️</div>
   <div style="font-size:28px; font-weight:bold; background:#3d1f08; color:#ffcc66; display:inline-block; padding:4px 18px; border:3px solid #1a0f05; transform:rotate(-1deg); margin-bottom:10px;">NATION DIVIDE</div>
