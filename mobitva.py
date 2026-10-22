@@ -1,133 +1,70 @@
-from flask import Flask
-import threading, os
-app = Flask(__name__)
-@app.route('/')
-def home(): return "Bot is alive!"
-def run_web():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
-threading.Thread(target=run_web, daemon=True).start()
-
-import asyncio, random, sqlite3
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-
-TOKEN = os.getenv("BOT_TOKEN")
-if not TOKEN:
-    raise RuntimeError("Добавь BOT_TOKEN в Render -> Environment")
-
-ADMINS = [842769679]
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
-db = sqlite3.connect("mobitva.db", check_same_thread=False)
-db.execute("CREATE TABLE IF NOT EXISTS players (user_id INTEGER PRIMARY KEY, lvl INTEGER, exp INTEGER, money INTEGER, str INTEGER, agi INTEGER, hp INTEGER, max_hp INTEGER, weapon INTEGER)")
-db.commit()
-admin_states = {}
-
+import os, threading, random, asyncio
+import psycopg2
+from flask import Flask, request, jsonify
+from aiogram import Bot, Dispatcher
+TOKEN=os.getenv("BOT_TOKEN","8829639637:AAFLGihpuAGQhYYQ3TViCXqwFMNl8G22y_4")
+DATABASE_URL=os.getenv("DATABASE_URL")
+ADMINS=[842769679]
+def get_conn(): return psycopg2.connect(DATABASE_URL)
+try:
+ c=get_conn();cur=c.cursor()
+ cur.execute("CREATE TABLE IF NOT EXISTS players (user_id BIGINT PRIMARY KEY, lvl INT DEFAULT 1, exp INT DEFAULT 0, money INT DEFAULT 100, str INT DEFAULT 5, hp INT DEFAULT 100, max_hp INT DEFAULT 100, weapon INT DEFAULT 0, wins INT DEFAULT 0)")
+ c.commit();c.close()
+except Exception as e: print(e)
 def get_player(uid):
-    cur = db.execute("SELECT * FROM players WHERE user_id=?", (uid,))
-    row = cur.fetchone()
-    if not row:
-        db.execute("INSERT INTO players VALUES (?,?,?,?,?,?,?,?,?)", (uid, 1, 0, 100, 5, 5, 100, 100, 0))
-        db.commit()
-        return {"user_id": uid, "lvl": 1, "exp": 0, "money": 100, "str": 5, "agi": 5, "hp": 100, "max_hp": 100, "weapon": 0}
-    return {"user_id": row[0], "lvl": row[1], "exp": row[2], "money": row[3], "str": row[4], "agi": row[5], "hp": row[6], "max_hp": row[7], "weapon": row[8]}
-
-def save_player(p):
-    db.execute("UPDATE players SET lvl=?, exp=?, money=?, str=?, agi=?, hp=?, max_hp=?, weapon=? WHERE user_id=?", (p['lvl'], p['exp'], p['money'], p['str'], p['agi'], p['hp'], p['max_hp'], p['weapon'], p['user_id']))
-    db.commit()
-def is_admin(uid): return uid in ADMINS
-def main_kb(uid):
-    rows = [[KeyboardButton(text="👊 Искать бой"), KeyboardButton(text="👤 Профиль")], [KeyboardButton(text="🛒 Магазин")]]
-    if is_admin(uid): rows.append([KeyboardButton(text="👑 Админка")])
-    return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
-def admin_kb():
-    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="💰 Выдать деньги", callback_data="adm_money")], [InlineKeyboardButton(text="📈 Выдать уровень", callback_data="adm_lvl")], [InlineKeyboardButton(text="❤️ Вылечить всех", callback_data="adm_heal")], [InlineKeyboardButton(text="📊 Статистика", callback_data="adm_stats")]])
-
-@dp.message(Command("start"))
-async def start(m: types.Message):
-    get_player(m.from_user.id)
-    await m.answer(f"Добро пожаловать в МобиБитву, {m.from_user.first_name}! 🔥", reply_markup=main_kb(m.from_user.id))
-
-@dp.message(lambda m: m.text == "👤 Профиль")
-async def profile(m: types.Message):
-    p = get_player(m.from_user.id)
-    mark = " 👑 АДМИН" if is_admin(m.from_user.id) else ""
-    await m.answer(f"👤 {m.from_user.first_name}{mark}\nID: {p['user_id']}\nУровень: {p['lvl']} | Опыт: {p['exp']}/100\n💰 Деньги: {p['money']} руб\n💪 Сила: {p['str']} | 🔫 Оружие: +{p['weapon']}\n❤️ Здоровье: {p['hp']}/{p['max_hp']}")
-
-@dp.message(lambda m: m.text == "👊 Искать бой")
-async def fight_start(m: types.Message):
-    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="В ГОЛОВУ 🧠", callback_data="hit_head")], [InlineKeyboardButton(text="В КОРПУС 🦾", callback_data="hit_body")], [InlineKeyboardButton(text="В НОГИ 🦵", callback_data="hit_legs")]])
-    await m.answer("Куда бьешь? Выбирай:", reply_markup=kb)
-
-@dp.callback_query(lambda c: c.data.startswith("hit_"))
-async def fight(c: types.CallbackQuery):
-    p = get_player(c.from_user.id)
-    if random.random() < 0.33:
-        await c.answer("Противник заблокировал! 🛡️"); return
-    dmg = p['str'] + p['weapon'] + random.randint(1, 5)
-    p['exp'] += 15; p['money'] += 25
-    if p['exp'] >= 100:
-        p['lvl'] += 1; p['exp'] = 0; p['str'] += 2; p['max_hp'] += 10; p['hp'] = p['max_hp']
-    save_player(p)
-    await c.message.edit_text(f"💥 Попал на {dmg} урона! +25 руб и +15 опыта.")
-
-@dp.message(lambda m: m.text == "🛒 Магазин")
-async def shop(m: types.Message):
-    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Бита - 200 руб (+3)", callback_data="buy_bita")], [InlineKeyboardButton(text="Пистолет - 800 руб (+12)", callback_data="buy_pistol")]])
-    await m.answer("Барыга: Что надо?", reply_markup=kb)
-
-@dp.callback_query(lambda c: c.data.startswith("buy_"))
-async def buy(c: types.CallbackQuery):
-    p = get_player(c.from_user.id)
-    if c.data == "buy_bita" and p['money'] >= 200:
-        p['money'] -= 200; p['weapon'] = 3; save_player(p)
-        await c.answer("Купил биту!")
-    elif c.data == "buy_pistol" and p['money'] >= 800:
-        p['money'] -= 800; p['weapon'] = 12; save_player(p)
-        await c.answer("Купил ствол! 🔫")
-    else: await c.answer("Денег нет!")
-
-@dp.message(lambda m: m.text == "👑 Админка")
-async def admin_menu_msg(m: types.Message):
-    if not is_admin(m.from_user.id): return
-    await m.answer("👑 Админ-панель:", reply_markup=admin_kb())
-@dp.message(Command("admin"))
-async def admin_menu_cmd(m: types.Message):
-    if not is_admin(m.from_user.id): return
-    await m.answer("👑 Админ-панель:", reply_markup=admin_kb())
-
-@dp.callback_query(lambda c: c.data.startswith("adm_"))
-async def admin_click(c: types.CallbackQuery):
-    if not is_admin(c.from_user.id): return
-    if c.data == "adm_money":
-        admin_states[c.from_user.id] = "wait_money"
-        await c.message.answer("Напиши: ID сумма\nПример: 842769679 10000")
-    elif c.data == "adm_lvl":
-        admin_states[c.from_user.id] = "wait_lvl"
-        await c.message.answer("Напиши: ID уровень")
-    elif c.data == "adm_heal":
-        db.execute("UPDATE players SET hp=max_hp"); db.commit()
-        await c.message.answer("❤️ Всех вылечил!")
-    elif c.data == "adm_stats":
-        cur = db.execute("SELECT COUNT(*), SUM(money) FROM players")
-        count, total = cur.fetchone()
-        await c.message.answer(f"📊 Игроков: {count}\nВсего денег: {total}")
-
-@dp.message()
-async def admin_input(m: types.Message):
-    if m.from_user.id not in admin_states: return
-    state = admin_states[m.from_user.id]
-    try:
-        parts = m.text.split()
-        tid = int(parts[0]); val = int(parts[1])
-        p = get_player(tid)
-        if state == "wait_money": p['money'] += val; save_player(p)
-        if state == "wait_lvl": p['lvl'] = val; save_player(p)
-        await m.answer(f"✅ Готово для {tid}: {val}")
-        del admin_states[m.from_user.id]
-    except Exception as e: await m.answer(f"Ошибка: {e}")
-
-async def main(): await dp.start_polling(bot)
-if __name__ == "__main__": asyncio.run(main())
+ conn=get_conn();cur=conn.cursor()
+ cur.execute("SELECT * FROM players WHERE user_id=%s",(uid,));r=cur.fetchone()
+ if not r:
+  cur.execute("INSERT INTO players (user_id) VALUES (%s)",(uid,));conn.commit()
+  cur.execute("SELECT * FROM players WHERE user_id=%s",(uid,));r=cur.fetchone()
+ conn.close()
+ return {"user_id":r[0],"lvl":r[1],"exp":r[2],"money":r[3],"str":r[4],"hp":r[5],"max_hp":r[6],"weapon":r[7],"wins":r[8]}
+def save(p):
+ conn=get_conn();cur=conn.cursor()
+ cur.execute("UPDATE players SET lvl=%s,exp=%s,money=%s,str=%s,hp=%s,max_hp=%s,weapon=%s,wins=%s WHERE user_id=%s",(p['lvl'],p['exp'],p['money'],p['str'],p['hp'],p['max_hp'],p['weapon'],p['wins'],p['user_id']))
+ conn.commit();conn.close()
+app=Flask('')
+@app.route('/')
+def game():
+ return """<!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Мобитва</title><style>body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:15px}.card{background:#1e1e1e;padding:15px;border-radius:15px;margin:10px 0}button{padding:12px 18px;margin:5px;border-radius:10px;border:none;font-weight:bold}.loc1{background:#555;color:#fff}.loc2{background:#ff9800}.loc3{background:#f44336;color:#fff}.shop{background:#4caf50;color:#fff}</style></head><body><h1>🔥 МОБИТВА 3 ЛОКАЦИИ 🔥</h1><div class=card id=info>Загрузка...</div><div class=card><b>ЛОКАЦИИ:</b><br><button class=loc1 onclick=fight(1)>🏚️ Подворотня</button><button class=loc2 onclick=fight(2)>🏭 Промзона</button><button class=loc3 onclick=fight(3)>🏙️ Центр</button></div><div class=card><b>МАГАЗИН:</b><br><button class=shop onclick=buy(200,3)>🔪 Бита 200р</button><button class=shop onclick=buy(800,12)>🔫 Пистолет 800р</button></div><div class=card id=quest></div><div class=card><a id=admLink style=color:#2196f3>👑 Админка</a></div><script>let uid=localStorage.getItem('uid')||Math.floor(Math.random()*900000)+100000;localStorage.setItem('uid',uid);document.getElementById('admLink').href='/admin?uid='+uid;async function load(){let r=await fetch('/api/player?uid='+uid);let p=await r.json();document.getElementById('info').innerHTML=`ID:${p.user_id} | Ур:${p.lvl} | EXP:${p.exp}/100<br>💰${p.money} 💪${p.str} 🔫+${p.weapon} ❤️${p.hp}/${p.max_hp} 🏆${p.wins}`;let q=p.wins<5?`📜 Победи 5 раз (${p.wins}/5) +500р`:p.lvl<3?`📜 Достигни 3 ур +1000р`:`✅ Все квесты!`;document.getElementById('quest').innerHTML=q}async function fight(loc){let r=await fetch('/api/fight?uid='+uid+'&loc='+loc,{method:'POST'});let d=await r.json();alert(d.msg);load()}async function buy(pr,wp){let r=await fetch('/api/buy?uid='+uid+'&price='+pr+'&wp='+wp,{method:'POST'});let d=await r.json();alert(d.msg);load()}load();</script></body></html>"""
+@app.route('/api/player')
+def api_player(): return jsonify(get_player(int(request.args.get('uid'))))
+@app.route('/api/fight',methods=['POST'])
+def api_fight():
+ uid=int(request.args.get('uid'));loc=int(request.args.get('loc',1));p=get_player(uid)
+ cfg={1:{"n":"Гопник","hp":30,"dmg":5,"m":30,"e":15},2:{"n":"Охранник","hp":70,"dmg":12,"m":80,"e":35},3:{"n":"Мажор","hp":150,"dmg":25,"m":200,"e":80}}[loc]
+ if random.random()<0.3:
+  p['hp']-=cfg['dmg']
+  if p['hp']<=0: p['hp']=p['max_hp'];msg=f"💀 Тебя вырубил {cfg['n']}!"
+  else: msg=f"🛡️ {cfg['n']} блок! -{cfg['dmg']} HP"
+ else:
+  dmg=p['str']+p['weapon']+random.randint(1,10);p['wins']+=1;p['money']+=cfg['m'];p['exp']+=cfg['e'];msg=f"💥 Вынес {cfg['n']} на {dmg}! +{cfg['m']}р +{cfg['e']} опыта"
+  if p['wins']==5: p['money']+=500;msg+=" | 📜 Квест +500р!"
+  if p['exp']>=100: p['lvl']+=1;p['exp']=0;p['str']+=3;p['max_hp']+=15;p['hp']=p['max_hp'];msg+=f" | 🎉 LVL UP {p['lvl']}!"; 
+  if p['lvl']==3: p['money']+=1000;msg+=" | Квест Ур3 +1000р!"
+ save(p);return jsonify({"msg":msg})
+@app.route('/api/buy',methods=['POST'])
+def api_buy():
+ uid=int(request.args.get('uid'));price=int(request.args.get('price'));wp=int(request.args.get('wp'));p=get_player(uid)
+ if p['money']>=price: p['money']-=price;p['weapon']=wp;save(p);return jsonify({"msg":f"Купил +{wp} урона"})
+ return jsonify({"msg":"Денег нет!"})
+@app.route('/admin')
+def admin_page():
+ uid=int(request.args.get('uid',0))
+ if uid not in ADMINS: return f"Нет доступа ID {uid}. Открой /admin?uid=842769679"
+ conn=get_conn();cur=conn.cursor();cur.execute("SELECT user_id,lvl,money,wins FROM players ORDER BY lvl DESC LIMIT 100");rows=cur.fetchall();conn.close()
+ html=f"<body style='background:#111;color:#fff;text-align:center;padding:20px;font-family:Arial'><h2>👑 АДМИНКА</h2><form method=POST action='/admin/give?uid={uid}'><input name=target placeholder='ID игрока' required><br><br><input name=money type=number placeholder='Денег'><br><br><input name=exp type=number placeholder='Опыта'><br><br><button style='padding:10px;background:green;color:white'>Выдать</button></form><hr>"
+ for r in rows: html+=f"{r[0]} - Ур {r[1]} - {r[2]}р - {r[3]} побед<br>"
+ return html
+@app.route('/admin/give',methods=['POST'])
+def admin_give():
+ uid=int(request.args.get('uid')); 
+ if uid not in ADMINS: return "Нет доступа"
+ target=int(request.form['target']);money=int(request.form.get('money')or 0);exp=int(request.form.get('exp')or 0)
+ conn=get_conn();cur=conn.cursor();cur.execute("UPDATE players SET money=money+%s,exp=exp+%s WHERE user_id=%s",(money,exp,target));conn.commit();conn.close()
+ return f"✅ Выдал {target}: {money}р и {exp} опыта! <a href='/admin?uid={uid}'>Назад</a>"
+def run_web(): app.run(host='0.0.0.0',port=int(os.environ.get("PORT",10000)))
+bot=Bot(token=TOKEN);dp=Dispatcher()
+threading.Thread(target=run_web,daemon=True).start()
+async def bot_main(): await dp.start_polling(bot)
+if __name__=="__main__": asyncio.run(bot_main())
