@@ -1,70 +1,199 @@
-import os, threading, random, asyncio
-import psycopg2
-from flask import Flask, request, jsonify
-from aiogram import Bot, Dispatcher
-TOKEN=os.getenv("BOT_TOKEN","8829639637:AAFLGihpuAGQhYYQ3TViCXqwFMNl8G22y_4")
-DATABASE_URL=os.getenv("DATABASE_URL")
-ADMINS=[842769679]
-def get_conn(): return psycopg2.connect(DATABASE_URL)
-try:
- c=get_conn();cur=c.cursor()
- cur.execute("CREATE TABLE IF NOT EXISTS players (user_id BIGINT PRIMARY KEY, lvl INT DEFAULT 1, exp INT DEFAULT 0, money INT DEFAULT 100, str INT DEFAULT 5, hp INT DEFAULT 100, max_hp INT DEFAULT 100, weapon INT DEFAULT 0, wins INT DEFAULT 0)")
- c.commit();c.close()
-except Exception as e: print(e)
-def get_player(uid):
- conn=get_conn();cur=conn.cursor()
- cur.execute("SELECT * FROM players WHERE user_id=%s",(uid,));r=cur.fetchone()
- if not r:
-  cur.execute("INSERT INTO players (user_id) VALUES (%s)",(uid,));conn.commit()
-  cur.execute("SELECT * FROM players WHERE user_id=%s",(uid,));r=cur.fetchone()
- conn.close()
- return {"user_id":r[0],"lvl":r[1],"exp":r[2],"money":r[3],"str":r[4],"hp":r[5],"max_hp":r[6],"weapon":r[7],"wins":r[8]}
-def save(p):
- conn=get_conn();cur=conn.cursor()
- cur.execute("UPDATE players SET lvl=%s,exp=%s,money=%s,str=%s,hp=%s,max_hp=%s,weapon=%s,wins=%s WHERE user_id=%s",(p['lvl'],p['exp'],p['money'],p['str'],p['hp'],p['max_hp'],p['weapon'],p['wins'],p['user_id']))
- conn.commit();conn.close()
-app=Flask('')
-@app.route('/')
+from flask import Flask, request, redirect, session, render_template_string
+import os, psycopg2, hashlib
+
+app = Flask(__name__)
+app.secret_key = "nation-divide-2026-brutal"
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_db():
+    return psycopg2.connect(DATABASE_URL, sslmode='require')
+
+def init_db():
+    try:
+        conn=get_db(); cur=conn.cursor()
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS players (
+            id SERIAL PRIMARY KEY,
+            login TEXT UNIQUE,
+            password TEXT,
+            money INT DEFAULT 100,
+            level INT DEFAULT 1,
+            exp INT DEFAULT 0,
+            power INT DEFAULT 5,
+            weapon INT DEFAULT 3,
+            hp INT DEFAULT 100,
+            wins INT DEFAULT 0
+        )""")
+        conn.commit(); cur.close(); conn.close()
+    except Exception as e:
+        print(e)
+
+init_db()
+def hash_pwd(p): return hashlib.sha256(p.encode()).hexdigest()
+
+LOGIN_HTML = """
+<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; display:flex; justify-content:center; align-items:center;
+  background:#d9c5a0 url('https://www.transparenttextures.com/patterns/old-map.png');
+  font-family:'MedievalSharp', cursive;
+}
+.paper{
+  width:95%; max-width:420px; min-height:95vh;
+  background: #e8dcc0 url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+  border: 8px solid #5a3a1a;
+  border-image: url('https://i.imgur.com/Qr5rR4V.png') 30 stretch;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  padding:15px 18px 25px; text-align:center; position:relative;
+}
+.logo{width:300px; max-width:90%; margin:0 auto; filter: drop-shadow(0 8px 15px rgba(0,0,0,0.7));}
+.title{font-size:38px; color:#3d1f08; margin:5px 0; letter-spacing:2px; text-shadow:1px 1px 0 #f5e6c8;}
+.label{font-size:26px; margin:18px 0 6px; color:#2b1a08; text-decoration:underline; text-underline-offset:5px;}
+.input-wrap{
+  width:100%; height:58px; position:relative; margin:0 auto;
+  background: #f2e5c4; border:3px solid #6b4a2a; border-radius:4px;
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.4), 0 2px 0 #a07a4a;
+  display:flex; align-items:center; padding:0 12px;
+}
+.input-wrap::before, .input-wrap::after{
+  content:'⚜️'; position:absolute; font-size:12px; color:#6b4a2a;
+}
+.input-wrap::before{left:-2px; top:-8px} .input-wrap::after{right:-2px; bottom:-8px}
+.input-wrap input{
+  width:100%; border:none; background:transparent; outline:none;
+  font-family:'MedievalSharp'; font-size:20px; color:#4a2c0a;
+}
+.btns{display:flex; gap:12px; margin-top:22px;}
+.btn{
+  flex:1; height:56px; font-family:'MedievalSharp'; font-size:22px; font-weight:bold;
+  border:3px solid #3d1f08; border-radius:6px; cursor:pointer;
+  box-shadow: 0 4px 0 #2b1505, inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.btn:active{transform:translateY(4px); box-shadow:none;}
+.btn-login{background:#3a3a3a; color:#e8c86a; text-shadow:1px 1px 0 #000; border-color:#1a1a1a;}
+.btn-start{background:#5a3a1a; color:#ffdf8a; text-shadow:1px 1px 0 #000;}
+.forgot{margin-top:20px; font-size:20px; text-decoration:underline; cursor:pointer;}
+.footer{margin-top:18px; font-size:12px; opacity:0.6; font-family:Arial;}
+.msg{color:#8b0000; font-weight:bold; background:rgba(255,0,0,0.1); padding:8px; border-radius:6px; margin-bottom:10px;}
+</style></head>
+<body>
+<div class="paper">
+  <img class="logo" src="https://i.imgur.com/8QmQ2Yh.jpeg" alt="shield">
+  <!-- ЗАМЕНИ ССЫЛКУ ВЫШЕ НА СВОЮ КАРТИНКУ: после загрузки в GitHub поставь /static/logo.jpg -->
+  <div style="font-size:50px; margin-top:-20px">🛡️</div>
+  <div style="font-size:28px; font-weight:bold; background:#3d1f08; color:#ffcc66; display:inline-block; padding:4px 18px; border:3px solid #1a0f05; transform:rotate(-1deg); margin-bottom:10px;">NATION DIVIDE</div>
+  {% if msg %}<div class="msg">{{msg}}</div>{% endif %}
+  <form method="POST">
+    <div class="label">LOGIN</div>
+    <div style="font-size:22px; margin-bottom:4px;">Login</div>
+    <div class="input-wrap"><input name="login" placeholder="Enter your login" required></div>
+    <div style="font-size:22px; margin:18px 0 4px;">Password</div>
+    <div class="input-wrap"><input type="password" name="password" placeholder="Enter your password" required><span style="font-size:20px;">👁️</span></div>
+    <div class="btns">
+      <button class="btn btn-login" name="action" value="login">Login</button>
+      <button class="btn btn-start" name="action" value="reg">Start Game</button>
+    </div>
+  </form>
+  <div class="forgot">Forgot password?</div>
+  <div class="footer">v1.2.4 • Terms • Privacy</div>
+</div>
+</body></html>
+"""
+
+GAME_HTML = """<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:20px}
+.card{background:#222;padding:15px;border-radius:12px;margin:12px 0}
+a.btn{display:inline-block;padding:12px 18px;margin:5px;border-radius:8px;text-decoration:none;color:#fff;font-weight:bold}
+.orange{background:#ff9800}.red{background:#f44336}.green{background:#4caf50}
+</style></head>
+<body><h1>🔥 МОБИТВА | NATION DIVIDE 🔥</h1>
+<div class="card">Игрок: {{p[1]}} | Ур:{{p[4]}} | 💰{{p[3]}} | 💪{{p[6]}} | 🔪+{{p[7]}} | 🏆{{p[9]}}</div>
+<div class="card"><b>ЛОКАЦИИ:</b><br>
+<a class="btn" style="background:#555" href="/fight?loc=podvorotnya">🏚️ Подворотня</a>
+<a class="btn orange" href="/fight?loc=promzona">🏭 Промзона</a>
+<a class="btn red" href="/fight?loc=center">🏙️ Центр</a></div>
+<div class="card"><b>МАГАЗИН:</b><br>
+<a class="btn green" href="/buy?item=bita">🔪 Бита 200р</a>
+<a class="btn green" href="/buy?item=pistol">🔫 Пистолет 800р</a></div>
+<div class="card"><a href="/logout" style="color:#aaa">Выйти</a></div>
+{% if msg %}<div class="card">{{msg}}</div>{% endif %}
+</body></html>"""
+
+@app.route("/", methods=["GET","POST"])
+def index():
+    if "uid" in session: return redirect("/game")
+    msg=""
+    if request.method=="POST":
+        login=request.form.get("login","").strip()
+        pwd=request.form.get("password","").strip()
+        action=request.form.get("action")
+        if not login or not pwd:
+            msg="Введи логин и пароль!"
+        else:
+            conn=get_db(); cur=conn.cursor()
+            if action=="reg":
+                try:
+                    cur.execute("INSERT INTO players (login,password) VALUES (%s,%s)", (login, hash_pwd(pwd)))
+                    conn.commit()
+                    cur.execute("SELECT id FROM players WHERE login=%s",(login,))
+                    pid=cur.fetchone()[0]
+                    session["uid"]=pid; session["login"]=login
+                    cur.close(); conn.close()
+                    return redirect("/game")
+                except:
+                    conn.rollback(); msg="Логин уже занят!"
+            else:
+                cur.execute("SELECT id FROM players WHERE login=%s AND password=%s",(login, hash_pwd(pwd)))
+                row=cur.fetchone()
+                if row:
+                    session["uid"]=row[0]; session["login"]=login
+                    cur.close(); conn.close()
+                    return redirect("/game")
+                else:
+                    msg="Неверный логин или пароль!"
+            cur.close(); conn.close()
+    return render_template_string(LOGIN_HTML, msg=msg)
+
+@app.route("/game")
 def game():
- return """<!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Мобитва</title><style>body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:15px}.card{background:#1e1e1e;padding:15px;border-radius:15px;margin:10px 0}button{padding:12px 18px;margin:5px;border-radius:10px;border:none;font-weight:bold}.loc1{background:#555;color:#fff}.loc2{background:#ff9800}.loc3{background:#f44336;color:#fff}.shop{background:#4caf50;color:#fff}</style></head><body><h1>🔥 МОБИТВА 3 ЛОКАЦИИ 🔥</h1><div class=card id=info>Загрузка...</div><div class=card><b>ЛОКАЦИИ:</b><br><button class=loc1 onclick=fight(1)>🏚️ Подворотня</button><button class=loc2 onclick=fight(2)>🏭 Промзона</button><button class=loc3 onclick=fight(3)>🏙️ Центр</button></div><div class=card><b>МАГАЗИН:</b><br><button class=shop onclick=buy(200,3)>🔪 Бита 200р</button><button class=shop onclick=buy(800,12)>🔫 Пистолет 800р</button></div><div class=card id=quest></div><div class=card><a id=admLink style=color:#2196f3>👑 Админка</a></div><script>let uid=localStorage.getItem('uid')||Math.floor(Math.random()*900000)+100000;localStorage.setItem('uid',uid);document.getElementById('admLink').href='/admin?uid='+uid;async function load(){let r=await fetch('/api/player?uid='+uid);let p=await r.json();document.getElementById('info').innerHTML=`ID:${p.user_id} | Ур:${p.lvl} | EXP:${p.exp}/100<br>💰${p.money} 💪${p.str} 🔫+${p.weapon} ❤️${p.hp}/${p.max_hp} 🏆${p.wins}`;let q=p.wins<5?`📜 Победи 5 раз (${p.wins}/5) +500р`:p.lvl<3?`📜 Достигни 3 ур +1000р`:`✅ Все квесты!`;document.getElementById('quest').innerHTML=q}async function fight(loc){let r=await fetch('/api/fight?uid='+uid+'&loc='+loc,{method:'POST'});let d=await r.json();alert(d.msg);load()}async function buy(pr,wp){let r=await fetch('/api/buy?uid='+uid+'&price='+pr+'&wp='+wp,{method:'POST'});let d=await r.json();alert(d.msg);load()}load();</script></body></html>"""
-@app.route('/api/player')
-def api_player(): return jsonify(get_player(int(request.args.get('uid'))))
-@app.route('/api/fight',methods=['POST'])
-def api_fight():
- uid=int(request.args.get('uid'));loc=int(request.args.get('loc',1));p=get_player(uid)
- cfg={1:{"n":"Гопник","hp":30,"dmg":5,"m":30,"e":15},2:{"n":"Охранник","hp":70,"dmg":12,"m":80,"e":35},3:{"n":"Мажор","hp":150,"dmg":25,"m":200,"e":80}}[loc]
- if random.random()<0.3:
-  p['hp']-=cfg['dmg']
-  if p['hp']<=0: p['hp']=p['max_hp'];msg=f"💀 Тебя вырубил {cfg['n']}!"
-  else: msg=f"🛡️ {cfg['n']} блок! -{cfg['dmg']} HP"
- else:
-  dmg=p['str']+p['weapon']+random.randint(1,10);p['wins']+=1;p['money']+=cfg['m'];p['exp']+=cfg['e'];msg=f"💥 Вынес {cfg['n']} на {dmg}! +{cfg['m']}р +{cfg['e']} опыта"
-  if p['wins']==5: p['money']+=500;msg+=" | 📜 Квест +500р!"
-  if p['exp']>=100: p['lvl']+=1;p['exp']=0;p['str']+=3;p['max_hp']+=15;p['hp']=p['max_hp'];msg+=f" | 🎉 LVL UP {p['lvl']}!"; 
-  if p['lvl']==3: p['money']+=1000;msg+=" | Квест Ур3 +1000р!"
- save(p);return jsonify({"msg":msg})
-@app.route('/api/buy',methods=['POST'])
-def api_buy():
- uid=int(request.args.get('uid'));price=int(request.args.get('price'));wp=int(request.args.get('wp'));p=get_player(uid)
- if p['money']>=price: p['money']-=price;p['weapon']=wp;save(p);return jsonify({"msg":f"Купил +{wp} урона"})
- return jsonify({"msg":"Денег нет!"})
-@app.route('/admin')
-def admin_page():
- uid=int(request.args.get('uid',0))
- if uid not in ADMINS: return f"Нет доступа ID {uid}. Открой /admin?uid=842769679"
- conn=get_conn();cur=conn.cursor();cur.execute("SELECT user_id,lvl,money,wins FROM players ORDER BY lvl DESC LIMIT 100");rows=cur.fetchall();conn.close()
- html=f"<body style='background:#111;color:#fff;text-align:center;padding:20px;font-family:Arial'><h2>👑 АДМИНКА</h2><form method=POST action='/admin/give?uid={uid}'><input name=target placeholder='ID игрока' required><br><br><input name=money type=number placeholder='Денег'><br><br><input name=exp type=number placeholder='Опыта'><br><br><button style='padding:10px;background:green;color:white'>Выдать</button></form><hr>"
- for r in rows: html+=f"{r[0]} - Ур {r[1]} - {r[2]}р - {r[3]} побед<br>"
- return html
-@app.route('/admin/give',methods=['POST'])
-def admin_give():
- uid=int(request.args.get('uid')); 
- if uid not in ADMINS: return "Нет доступа"
- target=int(request.form['target']);money=int(request.form.get('money')or 0);exp=int(request.form.get('exp')or 0)
- conn=get_conn();cur=conn.cursor();cur.execute("UPDATE players SET money=money+%s,exp=exp+%s WHERE user_id=%s",(money,exp,target));conn.commit();conn.close()
- return f"✅ Выдал {target}: {money}р и {exp} опыта! <a href='/admin?uid={uid}'>Назад</a>"
-def run_web(): app.run(host='0.0.0.0',port=int(os.environ.get("PORT",10000)))
-bot=Bot(token=TOKEN);dp=Dispatcher()
-threading.Thread(target=run_web,daemon=True).start()
-async def bot_main(): await dp.start_polling(bot)
-if __name__=="__main__": asyncio.run(bot_main())
+    if "uid" not in session: return redirect("/")
+    conn=get_db(); cur=conn.cursor()
+    cur.execute("SELECT id,login,login,money,level,exp,power,weapon,hp,wins FROM players WHERE id=%s",(session["uid"],))
+    r=cur.fetchone(); p=(r[0],r[1],"",r[3],r[4],r[5],r[6],r[7],r[8],r[9])
+    cur.close(); conn.close()
+    return render_template_string(GAME_HTML, p=p, msg=request.args.get("m",""))
+
+@app.route("/fight")
+def fight():
+    if "uid" not in session: return redirect("/")
+    conn=get_db(); cur=conn.cursor()
+    cur.execute("UPDATE players SET wins=wins+1, money=money+50, exp=exp+25 WHERE id=%s",(session["uid"],))
+    cur.execute("UPDATE players SET level=level+1, exp=0 WHERE exp>=100 AND id=%s",(session["uid"],))
+    conn.commit(); cur.close(); conn.close()
+    return redirect("/game?m=Победа! +50р")
+
+@app.route("/buy")
+def buy():
+    if "uid" not in session: return redirect("/")
+    item=request.args.get("item"); conn=get_db(); cur=conn.cursor()
+    cur.execute("SELECT money FROM players WHERE id=%s",(session["uid"],))
+    money=cur.fetchone()[0]
+    m="Не хватает!"
+    if item=="bita" and money>=200:
+        cur.execute("UPDATE players SET money=money-200, weapon=weapon+5 WHERE id=%s",(session["uid"],)); conn.commit(); m="Купил биту!"
+    elif item=="pistol" and money>=800:
+        cur.execute("UPDATE players SET money=money-800, weapon=weapon+15 WHERE id=%s",(session["uid"],)); conn.commit(); m="Купил пистолет!"
+    cur.close(); conn.close()
+    return redirect(f"/game?m={m}")
+
+@app.route("/logout")
+def logout():
+    session.clear(); return redirect("/")
+
+if __name__=="__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT",10000)))
