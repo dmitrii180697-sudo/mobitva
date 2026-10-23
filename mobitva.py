@@ -32,38 +32,36 @@ LOGIN_HTML = '''
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=MedievalSharp&display=swap');
-body{background:#d8c9a3;margin:0;display:flex;justify-content:center;min-height:100vh;font-family:MedievalSharp,cursive;}
-.wrap{width:100%;max-width:420px;background:#efe7c8;border-left:6px solid #2b1a08;border-right:6px solid #2b1a08;min-height:100vh;padding:15px 18px 30px;box-sizing:border-box;box-shadow:inset 0 0 80px rgba(0,0,0,0.2);}
-.shield{display:flex;justify-content:center;margin:10px 0 0;}
-.shield-inner{width:78px;height:92px;background:linear-gradient(#a9d4e6,#6ea7bf);border:3px solid #c9a227;border-radius:0 0 38px 38px;box-shadow:0 3px 0 #5a3a18;}
-.banner{background:#3e260a;color:#f5d47a;text-align:center;padding:14px 10px;font-family:Cinzel,serif;font-size:28px;letter-spacing:2px;border:3px solid #2b1a08;box-shadow:0 4px 0 #1a160e;transform:rotate(-1deg);margin:14px 0 22px;}
-.label{font-size:32px;text-align:center;margin:18px 0 2px;letter-spacing:2px;}
-.label small{display:block;font-size:22px;margin-top:-6px;}
-.input-box{position:relative;margin:10px 2px 18px;}
-.input-box input{width:100%;padding:16px 14px;font-size:20px;background:#f6eecb;border:3px solid #7a5a2e;border-radius:10px;box-sizing:border-box;font-family:MedievalSharp,cursive;outline:none;}
+body{background:#1a1206;margin:0;display:flex;justify-content:center;min-height:100vh;font-family:MedievalSharp,cursive;}
+.wrap{width:100%;max-width:430px;background:#efe7c8;min-height:100vh;padding:0 0 30px;box-sizing:border-box;box-shadow:0 0 80px rgba(0,0,0,0.8);border-left:6px solid #2b1a08;border-right:6px solid #2b1a08;}
+.logo-box img{width:100%;height:auto;display:block;}
+.content{padding:14px 18px 10px;}
+.label{font-size:30px;text-align:center;margin:10px 0 6px;color:#3e260a;font-family:Cinzel;}
+.input-box{position:relative;margin:10px 2px 16px;}
+.input-box input{width:100%;padding:16px 14px;font-size:19px;background:#f6eecb;border:3px solid #5a3a18;border-radius:10px;box-sizing:border-box;font-family:MedievalSharp,cursive;outline:none;}
 .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:22px;}
 .btns{display:flex;gap:12px;margin-top:16px;}
-.btns button{flex:1;padding:16px 8px;border-radius:12px;border:3px solid #2b1a08;font-family:Cinzel,serif;font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #1a160e;}
-.btn-login{background:#222;color:#eec96a;}
+.btns button{flex:1;padding:15px 8px;border-radius:12px;border:3px solid #2b1a08;font-family:Cinzel,serif;font-size:19px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #1a160e;}
+.btn-login{background:#1a1a1a;color:#eec96a;}
 .btn-reg{background:#6d4a1f;color:#ffe9a0;}
-.ver{color:#7a6a4a;text-align:center;font-family:Arial;font-size:13px;margin-top:14px;}
+.ver{color:#7a6a4a;text-align:center;font-family:Arial;font-size:12px;margin-top:16px;}
 .msg{background:#5a1a1a;color:#ffdddd;padding:12px;border-radius:8px;text-align:center;margin:12px 0;font-family:Arial;}
 </style></head><body><div class="wrap">
-<div class="shield"><div class="shield-inner"></div></div>
-<div class="banner">NATION DIVIDE</div>
-<div class="label">LOGIN <small>Login</small></div>
+<div class="logo-box"><img src="/static/logo.jpg" alt="NATION DIVIDE"></div>
+<div class="content">
+<div class="label">LOGIN <small style="display:block;font-size:18px;">Login</small></div>
 {% if msg %}<div class="msg">{{msg}}</div>{% endif %}
 <form method="POST">
 <div class="input-box"><input name="login" placeholder="Enter your login" required></div>
-<div style="text-align:center;font-size:28px;margin-top:10px;">Password</div>
+<div style="text-align:center;font-size:24px;margin-top:6px;color:#3e260a;">Password</div>
 <div class="input-box"><input type="password" id="pwd" name="password" placeholder="Enter your password" required><span class="eye" onclick="document.getElementById('pwd').type=document.getElementById('pwd').type=='password'?'text':'password'">👁️</span></div>
 <div class="btns">
 <button class="btn-login" name="action" value="login">Login</button>
 <button class="btn-reg" name="action" value="reg">Start Game</button>
 </div>
 </form>
-<div class="ver">v1.2.4 • Terms • Privacy</div>
-</div></body></html>
+<div class="ver">v1.2.5 with logo • Terms • Privacy</div>
+</div></div></body></html>
 '''
 
 GAME_HTML = '''
@@ -75,6 +73,7 @@ a.btn{display:inline-block;padding:10px 14px;margin:5px;border-radius:8px;text-d
 a.btn.green{background:#2e7d32} a.btn.gold{background:#b78a0f}
 </style></head><body>
 <h1>MOBITVA</h1>
+<div class="card" style="text-align:center"><img src="/static/logo.jpg" style="width:100%;max-width:320px;border-radius:10px;border:2px solid #5a3a18;"></div>
 <div class="card">Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}} | Power:{{p[6]+p[7]}} | Wins:{{p[9]}} {% if is_admin %}| <a href="/admin" style="color:#8a1a1a;font-weight:bold">ADMIN PANEL</a>{% endif %}</div>
 <div class="card"><b>LOCATIONS:</b><br>{% for loc in locations %}<a class="btn" href="/fight?loc={{loc[1]}}">{{loc[2]}}</a>{% endfor %}</div>
 <div class="card"><b>BANK:</b><br><a class="btn gold" href="/bank?pack=1000">1000=500tg</a><a class="btn gold" href="/bank?pack=5000">5000=2000tg</a><a class="btn gold" href="/bank?pack=20000">20000=7000tg</a></div>
