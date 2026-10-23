@@ -12,7 +12,7 @@ def get_db():
 
 def init_db():
     conn=get_db(); cur=conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, login TEXT UNIQUE, password TEXT, is_admin BOOLEAN DEFAULT FALSE, money INT DEFAULT 0, level INT DEFAULT 1)")
+    cur.execute("CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, login TEXT UNIQUE, password TEXT, is_admin BOOLEAN DEFAULT FALSE, money INT DEFAULT 0, level INT DEFAULT 1, exp INT DEFAULT 0, location TEXT DEFAULT 'center')")
     cur.execute("CREATE TABLE IF NOT EXISTS locations (code TEXT PRIMARY KEY, name TEXT)")
     cur.execute("CREATE TABLE IF NOT EXISTS enemies (code TEXT PRIMARY KEY, name TEXT, location_code TEXT)")
     cur.execute("SELECT COUNT(*) FROM locations")
