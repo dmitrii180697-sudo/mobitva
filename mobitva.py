@@ -12,9 +12,9 @@ def get_db():
 
 def init_db():
     conn=get_db(); cur=conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, login TEXT UNIQUE, password TEXT, money INT DEFAULT 100, level INT DEFAULT 1, exp INT DEFAULT 0, power INT DEFAULT 5, weapon INT DEFAULT 3, hp INT DEFAULT 100, wins INT DEFAULT 0, is_admin BOOLEAN DEFAULT FALSE)")
-    cur.execute("CREATE TABLE IF NOT EXISTS locations (id SERIAL PRIMARY KEY, code TEXT UNIQUE, name TEXT, description TEXT, min_level INT DEFAULT 1, reward_money INT DEFAULT 50, reward_exp INT DEFAULT 25)")
-    cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY, title TEXT, description TEXT, reward_money INT, reward_exp INT, reward_item TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, login TEXT UNIQUE, password TEXT, is_admin BOOLEAN DEFAULT FALSE, money INT DEFAULT 0, level INT DEFAULT 1)")
+    cur.execute("CREATE TABLE IF NOT EXISTS locations (code TEXT PRIMARY KEY, name TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS enemies (code TEXT PRIMARY KEY, name TEXT, location_code TEXT)")
     cur.execute("SELECT COUNT(*) FROM locations")
     if cur.fetchone()[0]==0:
         cur.execute("INSERT INTO locations (code,name, description,min_level,reward_money,reward_exp) VALUES ('podvorotnya','Podvorotnya','For newbies',1,50,25),('promzona','Promzona','Dangerous',2,120,60),('center','Center','Elite',5,300,150)")
