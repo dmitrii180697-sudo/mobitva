@@ -154,7 +154,7 @@ def admin():
             col={"money":"money","exp":"exp","weapon":"weapon","level":"level"}[typ]
             cur.execute(f"UPDATE players SET {col}={col}+%s WHERE login=%s",(amount, login)); conn.commit(); msg=f"Gave {amount} {typ} to {login}"
         elif act=="add_loc":
-            cur.execute("INSERT INTO locations (code,name, description,min_level,reward_money,reward_exp) VALUES (%s,%s,%s,%s,%s,%s)", (request.form.get("code"), request.form.get("name"), request.form.get("desc"), int(request.form.get("min_level") or 1), int(request.form.get("reward_money") or 50), int(request.form.get("reward_exp") or 25))); conn.commit(); msg="Location created!"
+            cur.execute("INSERT INTO locations (code,name,description,min_level,reward_money,reward_exp) VALUES (%s,%s,%s,%s,%s,%s)", (request.form.get("code"), request.form.get("name"), request.form.get("desc"), int(request.form.get("min_level") or 1), int(request.form.get("reward_money") or 50), int(request.form.get("reward_exp") or 25))); conn.commit(); msg="Location created!"
         elif act=="add_quest":
             cur.execute("INSERT INTO quests (title, description,reward_money,reward_exp,reward_item) VALUES (%s,%s,%s,%s,%s)", (request.form.get("title"), request.form.get("description"), int(request.form.get("reward_money") or 0), int(request.form.get("reward_exp") or 0), "")); conn.commit(); msg="Quest created!"
     cur.execute("SELECT login FROM players ORDER BY level DESC"); players=cur.fetchall()
