@@ -13,11 +13,11 @@ def get_db():
 def init_db():
     conn=get_db(); cur=conn.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, login TEXT UNIQUE, password TEXT, money INT DEFAULT 100, level INT DEFAULT 1, exp INT DEFAULT 0, power INT DEFAULT 5, weapon INT DEFAULT 3, hp INT DEFAULT 100, wins INT DEFAULT 0, is_admin BOOLEAN DEFAULT FALSE)")
-    cur.execute("CREATE TABLE IF NOT EXISTS locations (id SERIAL PRIMARY KEY, code TEXT UNIQUE, name TEXT, desc TEXT, min_level INT DEFAULT 1, reward_money INT DEFAULT 50, reward_exp INT DEFAULT 25)")
-    cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY, title TEXT, desc TEXT, reward_money INT, reward_exp INT, reward_item TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS locations (id SERIAL PRIMARY KEY, code TEXT UNIQUE, name TEXT, description TEXT, min_level INT DEFAULT 1, reward_money INT DEFAULT 50, reward_exp INT DEFAULT 25)")
+    cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY, title TEXT, description TEXT, reward_money INT, reward_exp INT, reward_item TEXT)")
     cur.execute("SELECT COUNT(*) FROM locations")
     if cur.fetchone()[0]==0:
-        cur.execute("INSERT INTO locations (code,name,desc,min_level,reward_money,reward_exp) VALUES ('podvorotnya','Podvorotnya','For newbies',1,50,25),('promzona','Promzona','Dangerous',2,120,60),('center','Center','Elite',5,300,150)")
+        cur.execute("INSERT INTO locations (code,name, description,min_level,reward_money,reward_exp) VALUES ('podvorotnya','Podvorotnya','For newbies',1,50,25),('promzona','Promzona','Dangerous',2,120,60),('center','Center','Elite',5,300,150)")
     conn.commit()
     try:
         cur.execute("UPDATE players SET is_admin=TRUE WHERE login=%s", (ADMIN_LOGIN,))
@@ -96,8 +96,8 @@ ADMIN_HTML = '''
 body{background:#1a1a1a;color:#fff;font-family:Arial;padding:15px}.card{background:#2a2a2a;padding:15px;border-radius:10px;margin:10px 0}input,select{padding:10px;border-radius:6px;border:none;margin:5px;width:200px}button{padding:10px 15px;border-radius:6px;border:none;background:#ff9800;font-weight:bold;cursor:pointer;margin:5px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:6px}a{color:#ff0}
 </style></head><body><h1>ADMIN PANEL</h1><a href="/game">Back to game</a> | <a href="/admin?logout_admin=1">Logout admin</a>
 <div class="card"><h3>1. Give to player</h3><form method="POST"><input type="hidden" name="act" value="give"><select name="login">{% for pl in players %}<option>{{pl[0]}}</option>{% endfor %}</select><select name="type"><option value="money">Money</option><option value="exp">Exp</option><option value="weapon">Weapon</option><option value="level">Level</option></select><input name="amount" type="number" placeholder="amount" required><button>Give</button></form></div>
-<div class="card"><h3>2. Create location</h3><form method="POST"><input type="hidden" name="act" value="add_loc"><input name="code" placeholder="code eng" required><input name="name" placeholder="Name" required><input name="desc" placeholder="Desc"><input name="min_level" type="number" value="1"><input name="reward_money" type="number" value="100"><input name="reward_exp" type="number" value="50"><button>Create</button></form></div>
-<div class="card"><h3>3. Create quest</h3><form method="POST"><input type="hidden" name="act" value="add_quest"><input name="title" placeholder="Title" required><input name="desc" placeholder="Desc"><input name="reward_money" type="number" value="200"><input name="reward_exp" type="number" value="100"><button>Create</button></form></div>
+<div class="card"><h3>2. Create location</h3><form method="POST"><input type="hidden" name="act" value="add_loc"><input name="code" placeholder="code eng" required><input name="name" placeholder="Name" required><input name="description" placeholder="Description"><input name="min_level" type="number" value="1"><input name="reward_money" type="number" value="100"><input name="reward_exp" type="number" value="50"><button>Create</button></form></div>
+<div class="card"><h3>3. Create quest</h3><form method="POST"><input type="hidden" name="act" value="add_quest"><input name="title" placeholder="Title" required><input name="desc" placeholder="Description"><input name="reward_money" type="number" value="200"><input name="reward_exp" type="number" value="100"><button>Create</button></form></div>
 <div class="card"><h3>Players</h3><table><tr><th>Login</th><th>Lv</th><th>Money</th><th>Wins</th></tr>{% for pl in players_full %}<tr><td>{{pl[1]}} {% if pl[10] %}CROWN{% endif %}</td><td>{{pl[4]}}</td><td>{{pl[3]}}</td><td>{{pl[9]}}</td></tr>{% endfor %}</table></div>{% if msg %}<div class="card" style="background:#664400">{{msg}}</div>{% endif %}</body></html>
 '''
 
@@ -154,9 +154,9 @@ def admin():
             col={"money":"money","exp":"exp","weapon":"weapon","level":"level"}[typ]
             cur.execute(f"UPDATE players SET {col}={col}+%s WHERE login=%s",(amount, login)); conn.commit(); msg=f"Gave {amount} {typ} to {login}"
         elif act=="add_loc":
-            cur.execute("INSERT INTO locations (code,name,desc,min_level,reward_money,reward_exp) VALUES (%s,%s,%s,%s,%s,%s)", (request.form.get("code"), request.form.get("name"), request.form.get("desc"), int(request.form.get("min_level") or 1), int(request.form.get("reward_money") or 50), int(request.form.get("reward_exp") or 25))); conn.commit(); msg="Location created!"
+            cur.execute("INSERT INTO locations (code,name, description,min_level,reward_money,reward_exp) VALUES (%s,%s,%s,%s,%s,%s)", (request.form.get("code"), request.form.get("name"), request.form.get("desc"), int(request.form.get("min_level") or 1), int(request.form.get("reward_money") or 50), int(request.form.get("reward_exp") or 25))); conn.commit(); msg="Location created!"
         elif act=="add_quest":
-            cur.execute("INSERT INTO quests (title,desc,reward_money,reward_exp,reward_item) VALUES (%s,%s,%s,%s,%s)", (request.form.get("title"), request.form.get("desc"), int(request.form.get("reward_money") or 0), int(request.form.get("reward_exp") or 0), "")); conn.commit(); msg="Quest created!"
+            cur.execute("INSERT INTO quests (title, description,reward_money,reward_exp,reward_item) VALUES (%s,%s,%s,%s,%s)", (request.form.get("title"), request.form.get("description"), int(request.form.get("reward_money") or 0), int(request.form.get("reward_exp") or 0), "")); conn.commit(); msg="Quest created!"
     cur.execute("SELECT login FROM players ORDER BY level DESC"); players=cur.fetchall()
     cur.execute("SELECT * FROM players ORDER BY level DESC"); players_full=cur.fetchall()
     cur.execute("SELECT * FROM locations"); locs=cur.fetchall()
