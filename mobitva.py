@@ -28,12 +28,79 @@ def init_db():
 init_db()
 def hash_pwd(p): return hashlib.sha256(p.encode()).hexdigest()
 
-LOGIN_HTML = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1'><style>body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:20px} .card{background:#222;padding:20px;border-radius:12px;max-width:400px;margin:auto} input{padding:12px;width:90%;margin:8px;border-radius:8px;border:none} button{padding:12px 20px;border-radius:8px;border:none;font-weight:bold;cursor:pointer;margin:5px} .login{background:#333;color:#ff0} .reg{background:#ff9800} .msg{background:#500;padding:10px;border-radius:8px;margin:10px 0}</style></head><body><div class='card'><h1>NATION DIVIDE</h1>{% if msg %}<div class='msg'>{{msg}}</div>{% endif %}<form method='POST'><input name='login' placeholder='Login' required><br><input type='password' name='password' placeholder='Password' required><br><button class='login' name='action' value='login'>Login</button><button class='reg' name='action' value='reg'>Start Game</button></form></div></body></html>"
+LOGIN_HTML = '''
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=MedievalSharp&display=swap');
+body{background:#d8c9a3;margin:0;display:flex;justify-content:center;min-height:100vh;font-family:MedievalSharp,cursive;}
+.wrap{width:100%;max-width:420px;background:#efe7c8;border-left:6px solid #2b1a08;border-right:6px solid #2b1a08;min-height:100vh;padding:15px 18px 30px;box-sizing:border-box;box-shadow:inset 0 0 80px rgba(0,0,0,0.2);}
+.shield{display:flex;justify-content:center;margin:10px 0 0;}
+.shield-inner{width:78px;height:92px;background:linear-gradient(#a9d4e6,#6ea7bf);border:3px solid #c9a227;border-radius:0 0 38px 38px;box-shadow:0 3px 0 #5a3a18;}
+.banner{background:#3e260a;color:#f5d47a;text-align:center;padding:14px 10px;font-family:Cinzel,serif;font-size:28px;letter-spacing:2px;border:3px solid #2b1a08;box-shadow:0 4px 0 #1a160e;transform:rotate(-1deg);margin:14px 0 22px;}
+.label{font-size:32px;text-align:center;margin:18px 0 2px;letter-spacing:2px;}
+.label small{display:block;font-size:22px;margin-top:-6px;}
+.input-box{position:relative;margin:10px 2px 18px;}
+.input-box input{width:100%;padding:16px 14px;font-size:20px;background:#f6eecb;border:3px solid #7a5a2e;border-radius:10px;box-sizing:border-box;font-family:MedievalSharp,cursive;outline:none;}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:22px;}
+.btns{display:flex;gap:12px;margin-top:16px;}
+.btns button{flex:1;padding:16px 8px;border-radius:12px;border:3px solid #2b1a08;font-family:Cinzel,serif;font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #1a160e;}
+.btn-login{background:#222;color:#eec96a;}
+.btn-reg{background:#6d4a1f;color:#ffe9a0;}
+.ver{color:#7a6a4a;text-align:center;font-family:Arial;font-size:13px;margin-top:14px;}
+.msg{background:#5a1a1a;color:#ffdddd;padding:12px;border-radius:8px;text-align:center;margin:12px 0;font-family:Arial;}
+</style></head><body><div class="wrap">
+<div class="shield"><div class="shield-inner"></div></div>
+<div class="banner">NATION DIVIDE</div>
+<div class="label">LOGIN <small>Login</small></div>
+{% if msg %}<div class="msg">{{msg}}</div>{% endif %}
+<form method="POST">
+<div class="input-box"><input name="login" placeholder="Enter your login" required></div>
+<div style="text-align:center;font-size:28px;margin-top:10px;">Password</div>
+<div class="input-box"><input type="password" id="pwd" name="password" placeholder="Enter your password" required><span class="eye" onclick="document.getElementById('pwd').type=document.getElementById('pwd').type=='password'?'text':'password'">👁️</span></div>
+<div class="btns">
+<button class="btn-login" name="action" value="login">Login</button>
+<button class="btn-reg" name="action" value="reg">Start Game</button>
+</div>
+</form>
+<div class="ver">v1.2.4 • Terms • Privacy</div>
+</div></body></html>
+'''
 
-GAME_HTML = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1'><style>body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:20px} .card{background:#222;padding:15px;border-radius:12px;margin:12px 0} a.btn{display:inline-block;padding:12px 18px;margin:5px;border-radius:8px;text-decoration:none;color:#fff;font-weight:bold} .orange{background:#ff9800} .red{background:#f44336} .green{background:#4caf50} .gold{background:#c9a227}</style></head><body><h1>MOBITVA</h1><div class='card'>Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}} | Power:{{p[6]+p[7]}} | Wins:{{p[9]}} {% if is_admin %}| <a href='/admin' style='color:#ff0'>ADMIN</a>{% endif %}</div><div class='card'><b>LOCATIONS:</b><br>{% for loc in locations %}<a class='btn orange' href='/fight?loc={{loc[1]}}'>{{loc[2]}}</a>{% endfor %}</div><div class='card'><b>BANK:</b><br><a class='btn gold' href='/bank?pack=1000'>1000=500tg</a><a class='btn gold' href='/bank?pack=5000'>5000=2000tg</a><a class='btn gold' href='/bank?pack=20000'>20000=7000tg</a></div><div class='card'><b>SHOP:</b><br><a class='btn green' href='/buy?item=bita'>Bita 200</a><a class='btn green' href='/buy?item=pistol'>Pistol 800</a><a class='btn green' href='/buy?item=ak'>AK 3000</a></div><div class='card'><a href='/logout' style='color:#aaa'>Logout</a></div>{% if msg %}<div class='card' style='background:#4a2a00'>{{msg}}</div>{% endif %}</body></html>"
-ADMIN_LOGIN_HTML = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1'><style>body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:40px}input{padding:15px;width:280px;border-radius:8px;border:none;margin:10px}button{padding:15px 30px;border-radius:8px;border:none;background:#ff9800;font-weight:bold;cursor:pointer}</style></head><body><h1>Admin Login</h1><p>Login: {{login}} - enter password</p>{% if msg %}<p style='color:red'>{{msg}}</p>{% endif %}<form method='POST'><input type='password' name='admin_pass' placeholder='Admin password' required><br><button>Enter</button></form><br><a href='/game' style='color:#aaa'>Back</a></body></html>"
+GAME_HTML = '''
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+body{background:#d8c9a3;margin:0;padding:12px;font-family:MedievalSharp,cursive;}
+.card{background:#efe7c8;border:3px solid #5a3a18;border-radius:12px;padding:14px;margin:12px auto;max-width:480px;}
+h1{text-align:center;font-family:Cinzel;color:#3e260a;}
+a.btn{display:inline-block;padding:10px 14px;margin:5px;border-radius:8px;text-decoration:none;color:#fff;font-weight:bold;background:#7a4a1e;border:2px solid #3e260a;}
+a.btn.green{background:#2e7d32} a.btn.gold{background:#b78a0f}
+</style></head><body>
+<h1>MOBITVA</h1>
+<div class="card">Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}} | Power:{{p[6]+p[7]}} | Wins:{{p[9]}} {% if is_admin %}| <a href="/admin" style="color:#8a1a1a;font-weight:bold">ADMIN PANEL</a>{% endif %}</div>
+<div class="card"><b>LOCATIONS:</b><br>{% for loc in locations %}<a class="btn" href="/fight?loc={{loc[1]}}">{{loc[2]}}</a>{% endfor %}</div>
+<div class="card"><b>BANK:</b><br><a class="btn gold" href="/bank?pack=1000">1000=500tg</a><a class="btn gold" href="/bank?pack=5000">5000=2000tg</a><a class="btn gold" href="/bank?pack=20000">20000=7000tg</a></div>
+<div class="card"><b>SHOP:</b><br><a class="btn green" href="/buy?item=bita">Bita 200</a><a class="btn green" href="/buy?item=pistol">Pistol 800</a><a class="btn green" href="/buy?item=ak">AK 3000</a></div>
+<div class="card" style="text-align:center"><a href="/logout" style="color:#555">Logout</a></div>
+{% if msg %}<div class="card" style="background:#5a3a18;color:#ffe9a0">{{msg}}</div>{% endif %}
+</body></html>
+'''
 
-ADMIN_HTML = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1'><style>body{background:#1a1a1a;color:#fff;font-family:Arial;padding:15px}.card{background:#2a2a2a;padding:15px;border-radius:10px;margin:10px 0}input,select{padding:10px;border-radius:6px;border:none;margin:5px;width:200px}button{padding:10px 15px;border-radius:6px;border:none;background:#ff9800;font-weight:bold;cursor:pointer;margin:5px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:6px}a{color:#ff0}</style></head><body><h1>ADMIN PANEL</h1><a href='/game'>Back to game</a> | <a href='/admin?logout_admin=1'>Logout admin</a><div class='card'><h3>1. Give to player</h3><form method='POST'><input type='hidden' name='act' value='give'><select name='login'>{% for pl in players %}<option>{{pl[0]}}</option>{% endfor %}</select><select name='type'><option value='money'>Money</option><option value='exp'>Exp</option><option value='weapon'>Weapon</option><option value='level'>Level</option></select><input name='amount' type='number' placeholder='amount' required><button>Give</button></form></div><div class='card'><h3>2. Create location</h3><form method='POST'><input type='hidden' name='act' value='add_loc'><input name='code' placeholder='code eng' required><input name='name' placeholder='Name' required><input name='desc' placeholder='Desc'><input name='min_level' type='number' value='1'><input name='reward_money' type='number' value='100'><input name='reward_exp' type='number' value='50'><button>Create</button></form></div><div class='card'><h3>3. Create quest</h3><form method='POST'><input type='hidden' name='act' value='add_quest'><input name='title' placeholder='Title' required><input name='desc' placeholder='Desc'><input name='reward_money' type='number' value='200'><input name='reward_exp' type='number' value='100'><button>Create</button></form></div><div class='card'><h3>Players</h3><table><tr><th>Login</th><th>Lv</th><th>Money</th><th>Wins</th></tr>{% for pl in players_full %}<tr><td>{{pl[1]}} {% if pl[10] %}CROWN{% endif %}</td><td>{{pl[4]}}</td><td>{{pl[3]}}</td><td>{{pl[9]}}</td></tr>{% endfor %}</table></div>{% if msg %}<div class='card' style='background:#664400'>{{msg}}</div>{% endif %}</body></html>"
+ADMIN_LOGIN_HTML = '''
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:40px}
+input{padding:15px;width:280px;border-radius:8px;border:none;margin:10px}
+button{padding:15px 30px;border-radius:8px;border:none;background:#ff9800;font-weight:bold;cursor:pointer}
+</style></head><body><h1>Admin Login</h1><p>Login: {{login}} - enter password admin123</p>{% if msg %}<p style="color:#ff5555">{{msg}}</p>{% endif %}<form method="POST"><input type="password" name="admin_pass" placeholder="Admin password" required><br><button>Enter</button></form><br><a href="/game" style="color:#aaa">Back to game</a></body></html>
+'''
+
+ADMIN_HTML = '''
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+body{background:#1a1a1a;color:#fff;font-family:Arial;padding:15px}.card{background:#2a2a2a;padding:15px;border-radius:10px;margin:10px 0}input,select{padding:10px;border-radius:6px;border:none;margin:5px;width:200px}button{padding:10px 15px;border-radius:6px;border:none;background:#ff9800;font-weight:bold;cursor:pointer;margin:5px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:6px}a{color:#ff0}
+</style></head><body><h1>ADMIN PANEL</h1><a href="/game">Back to game</a> | <a href="/admin?logout_admin=1">Logout admin</a>
+<div class="card"><h3>1. Give to player</h3><form method="POST"><input type="hidden" name="act" value="give"><select name="login">{% for pl in players %}<option>{{pl[0]}}</option>{% endfor %}</select><select name="type"><option value="money">Money</option><option value="exp">Exp</option><option value="weapon">Weapon</option><option value="level">Level</option></select><input name="amount" type="number" placeholder="amount" required><button>Give</button></form></div>
+<div class="card"><h3>2. Create location</h3><form method="POST"><input type="hidden" name="act" value="add_loc"><input name="code" placeholder="code eng" required><input name="name" placeholder="Name" required><input name="desc" placeholder="Desc"><input name="min_level" type="number" value="1"><input name="reward_money" type="number" value="100"><input name="reward_exp" type="number" value="50"><button>Create</button></form></div>
+<div class="card"><h3>3. Create quest</h3><form method="POST"><input type="hidden" name="act" value="add_quest"><input name="title" placeholder="Title" required><input name="desc" placeholder="Desc"><input name="reward_money" type="number" value="200"><input name="reward_exp" type="number" value="100"><button>Create</button></form></div>
+<div class="card"><h3>Players</h3><table><tr><th>Login</th><th>Lv</th><th>Money</th><th>Wins</th></tr>{% for pl in players_full %}<tr><td>{{pl[1]}} {% if pl[10] %}CROWN{% endif %}</td><td>{{pl[4]}}</td><td>{{pl[3]}}</td><td>{{pl[9]}}</td></tr>{% endfor %}</table></div>{% if msg %}<div class="card" style="background:#664400">{{msg}}</div>{% endif %}</body></html>
+'''
 
 @app.route("/", methods=["GET","POST"])
 def index():
@@ -72,12 +139,12 @@ def admin():
     if "uid" not in session: return redirect("/")
     if request.args.get("logout_admin"): session.pop("admin_ok",None); return redirect("/admin")
     conn=get_db(); cur=conn.cursor(); cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],)); me=cur.fetchone()
-    if not me or not me[10]: cur.close(); conn.close(); return "No access!"
+    if not me or not me[10]: cur.close(); conn.close(); return "No access! Login as Dmitrii"
     if not session.get("admin_ok"):
         msg=""
         if request.method=="POST" and "admin_pass" in request.form:
             if request.form.get("admin_pass")==ADMIN_PASSWORD: session["admin_ok"]=True
-            else: msg="Wrong password!"
+            else: msg="Wrong password! Use admin123"
         if not session.get("admin_ok"):
             cur.close(); conn.close(); return render_template_string(ADMIN_LOGIN_HTML, login=me[1], msg=msg)
     msg=""
