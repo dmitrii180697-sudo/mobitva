@@ -9,15 +9,61 @@ ADMIN_PASSWORD = "admin123"
 
 def get_db():
     return psycopg2.connect(DATABASE_URL, sslmode='require')
-
 def init_db():
     conn=get_db(); cur=conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, login TEXT UNIQUE, password TEXT, is_admin BOOLEAN DEFAULT FALSE, money INT DEFAULT 0, level INT DEFAULT 1, exp INT DEFAULT 0, location TEXT DEFAULT 'center')")
-    cur.execute("CREATE TABLE IF NOT EXISTS locations (code TEXT PRIMARY KEY, name TEXT)")
-    cur.execute("CREATE TABLE IF NOT EXISTS enemies (code TEXT PRIMARY KEY, name TEXT, location_code TEXT)")
+    # Игроки - порядок ВАЖЕН для p[3], p[4], p[9], p[10]
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS players (
+      id SERIAL PRIMARY KEY,
+      login TEXT UNIQUE,
+      password TEXT,
+      money INT DEFAULT 0,
+      level INT DEFAULT 1,
+      exp INT DEFAULT 0,
+      weapon INT DEFAULT 0,
+      strength INT DEFAULT 5,
+      defense INT DEFAULT 0,
+      wins INT DEFAULT 0,
+      is_admin BOOLEAN DEFAULT FALSE,
+      location TEXT DEFAULT 'center'
+    )
+    """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS locations (
+      code TEXT PRIMARY KEY,
+      name TEXT,
+      description TEXT,
+      min_level INT DEFAULT 1,
+      reward_money INT DEFAULT 0,
+      reward_exp INT DEFAULT 0
+    )
+    """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS enemies (
+      code TEXT PRIMARY KEY,
+      name TEXT,
+      location_code TEXT
+    )
+    """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS quests (
+      id SERIAL PRIMARY KEY,
+      title TEXT,
+      description TEXT,
+      reward_money INT DEFAULT 0,
+      reward_exp INT DEFAULT 0,
+      reward_item TEXT
+    )
+    """)
     cur.execute("SELECT COUNT(*) FROM locations")
     if cur.fetchone()[0]==0:
-        cur.execute("INSERT INTO locations (code,name, description,min_level,reward_money,reward_exp) VALUES ('podvorotnya','Podvorotnya','For newbies',1,50,25),('promzona','Promzona','Dangerous',2,120,60),('center','Center','Elite',5,300,150)")
+        cur.execute("""
+        INSERT INTO locations (code,name,description,min_level,reward_money,reward_exp) VALUES
+        ('podvorotnya','Podvorotnya','For newbies',1,50,25),
+        ('promzona','Promzona','Dangerous',2,120,60),
+        ('center','Center','Elite',5,300,150)
+        ON CONFLICT (code) DO NOTHING
+        """)
     conn.commit()
     try:
         cur.execute("UPDATE players SET is_admin=TRUE WHERE login=%s", (ADMIN_LOGIN,))
