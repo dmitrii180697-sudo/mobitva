@@ -153,8 +153,8 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 <div class="loc-name">{% if current_loc == 'lager' %}Лагерь{% elif current_loc == 'zastava' %}Застава{% elif current_loc == 'oboz' %}Обоз{% else %}Лагерь{% endif %}</div>
 
 <div class="btns">
-<a class="btn" href="/hunt">Охота</a>
-<a class="btn" href="/duel">Дуэли</a>
+<a class="btn" href="/hunt">Промысел</a>
+<a class="btn" href="/duel">Арена</a>
 </div>
 
 <div class="menu">
