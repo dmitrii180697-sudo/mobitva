@@ -113,20 +113,54 @@ body{background:#1a1206;margin:0;display:flex;justify-content:center;min-height:
 '''
 
 GAME_HTML = '''
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>
-body{background:#d8c9a3;margin:0;padding:12px;font-family:MedievalSharp,cursive;}
-.card{background:#efe7c8;border:3px solid #5a3a18;border-radius:12px;padding:14px;margin:12px auto;max-width:480px;}
-h1{text-align:center;font-family:Cinzel;color:#3e260a;}
-a.btn{display:inline-block;padding:10px 14px;margin:5px;border-radius:8px;text-decoration:none;color:#fff;font-weight:bold;background:#7a4a1e;border:2px solid #3e260a;}
-a.btn.green{background:#2e7d32} a.btn.gold{background:#b78a0f}
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{background:#c7b089;margin:0;padding:0 0 60px 0;font-family:Arial,sans-serif;}
+.top{ background: #e8dcc0; border:2px solid #5a3a18; border-radius:10px; margin:5px; padding:5px 8px; display:flex; justify-content:space-around; font-weight:bold; font-size:16px; }
+.frame{ margin:5px; border:4px solid #5a3a18; border-left:8px solid #5a3a18; border-right:8px solid #5a3a18; background:#000; position:relative; }
+.frame img{width:100%; display:block; height:210px; object-fit:cover;}
+.loc-name{ background: url('') #e8dcc0; margin:-15px 40px 0 40px; position:relative; text-align:center; padding:8px; font-weight:bold; border:1px solid #5a3a18; box-shadow:0 2px 3px #0005; z-index:5; }
+.btns{display:flex; justify-content:space-between; margin:10px 10px;}
+.btn{ background:#e48a2e; border:2px solid #5a3a18; padding:10px 0; width:48%; text-align:center; font-weight:bold; color:#000; text-decoration:none; }
+.menu{ background:#e8dcc0; border:2px solid #5a3a18; margin:5px 10px; padding:0 12px; }
+.row{ display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid #5a3a1888; }
+.row:last-child{border:none}
+.bottom{ position:fixed; bottom:0; left:0; right:0; background:#4b2e14; color:#fff; display:flex; justify-content:space-between; padding:12px 15px; }
+.bottom a{color:#fff;text-decoration:none}
 </style></head><body>
-<div class="card" style="text-align:center"><img src="/static/logo.jpg" style="width:100%;max-width:320px;border-radius:10px;border:2px solid #5a3a18;"></div>
-<div class="card">Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}} | Power:{{p[6]+p[7]}} | Wins:{{p[9]}} {% if is_admin %}| <a href="/admin" style="color:#8a1a1a;font-weight:bold">ADMIN PANEL</a>{% endif %}</div>
-<div class="card"><b>LOCATIONS:</b><br>{% for loc in locations %}<a class="btn" href="/fight?loc={{loc[1]}}">{{loc[2]}}</a>{% endfor %}</div>
-<div class="card"><b>BANK:</b><br><a class="btn gold" href="/bank?pack=1000">1000=500tg</a><a class="btn gold" href="/bank?pack=5000">5000=2000tg</a><a class="btn gold" href="/bank?pack=20000">20000=7000tg</a></div>
-<div class="card"><b>SHOP:</b><br><a class="btn green" href="/buy?item=bita">Bita 200</a><a class="btn green" href="/buy?item=pistol">Pistol 800</a><a class="btn green" href="/buy?item=ak">AK 3000</a></div>
-<div class="card" style="text-align:center"><a href="/logout" style="color:#555">Logout</a></div>
-{% if msg %}<div class="card" style="background:#5a3a18;color:#ffe9a0">{{msg}}</div>{% endif %}
+
+<div class="top">
+<span>⭐ {{p[4]}}</span>
+<span>❤️ {{p[5] if p|length>5 else 100}}</span>
+<span>🔵 {{p[3]}}</span>
+<span>🟡 0</span>
+<span>⚪ 0</span>
+<span>🟤 0</span>
+</div>
+
+<div class="frame">
+<img src="/static/loc1.jpg" onerror="this.src='/static/logo.jpg'">
+</div>
+
+<div class="loc-name">{{ current_loc if current_loc is defined else 'Кремнев' }}</div>
+
+<div class="btns">
+<a class="btn" href="/hunt">Охота</a>
+<a class="btn" href="/duel">Дуэли</a>
+</div>
+
+<div class="menu">
+<div class="row"><span>🏠 Задания (8/0/0)</span><a class="btn" style="width:auto; padding:6px 22px" href="/pass">Пасс</a></div>
+<div class="row"><span>➡️ Гати</span><a href="/loc/gati" style="font-size:22px;text-decoration:none">⬅️</a></div>
+<div class="row"><span>➡️ Ярмарка</span><a href="/shop"></a></div>
+<div class="row"><span>➡️ Банк</span><a href="/bank"></a></div>
+<div class="row"><span>Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}}</span></div>
+{% for loc in locations %}<div class="row"><a href="/loc/{{loc[0]}}">{{loc[1]}}</a></div>{% endfor %}
+{% if msg %}<div style="padding:10px; background:#5a3a18; color:#ffe9a0">{{msg}}</div>{% endif %}
+</div>
+
+<div class="bottom"><a href="/menu">Меню</a><span id="clock">00:00:00</span><a href="/logout">Выход</a></div>
+<script>setInterval(()=>{document.getElementById('clock').innerText=new Date().toLocaleTimeString()},1000)</script>
 </body></html>
 '''
 
