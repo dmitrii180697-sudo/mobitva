@@ -9,7 +9,8 @@ ADMIN_PASSWORD = "admin123"
 
 def get_db():
     return psycopg2.connect(DATABASE_URL, sslmode='require')
-    def init_db():
+
+def init_db():
     conn=get_db(); cur=conn.cursor()
     cur.execute("""
     CREATE TABLE IF NOT EXISTS players (
