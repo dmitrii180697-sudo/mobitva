@@ -12,7 +12,6 @@ def get_db():
 
 def init_db():
     conn=get_db(); cur=conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS players")
     cur.execute("""
     CREATE TABLE IF NOT EXISTS players (
         id SERIAL PRIMARY KEY,
