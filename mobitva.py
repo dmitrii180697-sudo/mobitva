@@ -115,20 +115,19 @@ body{background:#1a1206;margin:0;display:flex;justify-content:center;min-height:
 GAME_HTML = '''
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{background:url('{{ bg_image }}') no-repeat center center fixed; background-size:cover; background-color:#c7b089;margin:0;padding:0 0 60px 0;font-family:Arial,sans-serif;}
-.top{ background: #e8dcc0; border:2px solid #5a3a18; border-radius:10px; margin:5px; padding:5px 8px; display:flex; justify-content:space-around; font-weight:bold; font-size:16px; }
-.frame{ margin:5px; border:4px solid #5a3a18; border-left:8px solid #5a3a18; border-right:8px solid #5a3a18; background:#000; position:relative; }
+body{background:url('{{ bg_image }}') no-repeat center center fixed; background-size:cover; background-color:#3a2a18; margin:0; padding:0 0 70px 0; font-family:Arial;}
+.top{ background:#e8dcc0; border:2px solid #5a3a18; border-radius:10px; margin:5px; padding:5px 8px; display:flex; justify-content:space-between;}
+.frame{ margin:5px; border:4px solid #5a3a18; border-left:8px solid #5a3a18; border-right:8px solid #5a3a18; background:rgba(232,220,192,0.92); border-radius:10px; overflow:hidden;}
 .frame img{width:100%; display:block; height:210px; object-fit:cover;}
-.loc-name{ background: url('{{ bg_image }}') #e8dcc0; background-size:cover;
+.loc-name{ background:#e8dcc0; padding:8px; font-weight:bold; text-align:center; font-size:18px;}
 .btns{display:flex; justify-content:space-between; margin:10px 10px;}
-.btn{ background:#e48a2e; border:2px solid #5a3a18; padding:10px 0; width:48%; text-align:center; font-weight:bold; color:#000; text-decoration:none; }
-.menu{ background:#e8dcc0; border:2px solid #5a3a18; margin:5px 10px; padding:0 12px; }
-.row{ display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid #5a3a1888; }
+.btn{ background:#48a2c2; border:2px solid #5a3a18; padding:10px 0; width:48%; text-align:center; font-weight:bold; border-radius:8px; text-decoration:none; color:#000; display:block;}
+.menu{ background:#e8dcc0; border:2px solid #5a3a18; margin:5px 10px; padding:0 12px; border-radius:10px; background:rgba(232,220,192,0.95);}
+.row{ display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid #b8a080;}
 .row:last-child{border:none}
-.bottom{ position:fixed; bottom:0; left:0; right:0; background:#4b2e14; color:#fff; display:flex; justify-content:space-between; padding:12px 15px; }
-.bottom a{color:#fff;text-decoration:none}
-</style></head><body>
-
+.bottom{position:fixed; bottom:0; left:0; right:0; background:#4b2e14; color:#fff; display:flex; justify-content:space-around; padding:8px 0; font-size:13px;}
+.bottom a{color:#fff; text-decoration:none}
+</style>
 <div class="top">
 <span>⭐ {{p[4]}}</span>
 <span>❤️ {{p[5] if p|length>5 else 100}}</span>
