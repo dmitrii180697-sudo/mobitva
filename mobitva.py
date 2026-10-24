@@ -274,7 +274,31 @@ def bank():
     if add>0: cur.execute("UPDATE players SET money=money+%s WHERE id=%s",(add, session["uid"])); conn.commit(); m=f"Bank: {add} gold"
     else: m="Choose pack"
     cur.close(); conn.close(); return redirect(f"/game?m={m}")
+@app.route("/loc/<code>")
+def go_loc(code):
+    if "uid" not in session: return redirect("/")
+    conn=get_db(); cur=conn.cursor()
+    cur.execute("SELECT * FROM locations WHERE code=%s",(code,))
+    loc=cur.fetchone()
+    if not loc:
+        cur.close(); conn.close()
+        return redirect("/game?m=Location not found")
+    cur.execute("UPDATE players SET current_loc=%s WHERE id=%s",(code, session["uid"]))
+    conn.commit()
+    cur.close(); conn.close()
+    return redirect(f"/game?loc={code}")
 
+@app.route("/gati")
+def gati_page():
+    return redirect("/loc/gati")
+
+@app.route("/shop")
+def shop_page():
+    return redirect("/loc/yarmarka")
+
+@app.route("/bank_page")
+def bank_page_go():
+    return redirect("/loc/bank")
 @app.route("/quest")
 def quest_done():
     if "uid" not in session: return redirect("/")
