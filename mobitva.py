@@ -64,17 +64,16 @@ def init_db():
         cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','Центральная площадь'),('forest','Темный Лес',2,'','Опасный лес'),('dungeon','Подземелье',3,'','Глубокое подземелье')")
         cur.execute("INSERT INTO enemies (name,level,hp,damage,reward_money,reward_exp,location_code) VALUES ('Гопник',1,30,5,10,10,'center'),('Волк',2,50,10,20,20,'forest'),('Скелет',3,80,15,30,30,'dungeon')")
         cur.execute("INSERT INTO quests (title,description,reward_money,reward_exp) VALUES ('Первый бой','Победи 1 врага',50,20)")
-    cur.execute("SELECT * FROM players WHERE login=%s",(ADMIN_LOGIN,))
+        cur.execute("SELECT * FROM players WHERE login=%s",(ADMIN_LOGIN,))
     if not cur.fetchone():
         cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,1000,10,10)",(ADMIN_LOGIN,hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()))
     conn.commit(); conn.close()
-try:
-        cur.execute("UPDATE players SET is_admin=TRUE WHERE login=%s", (ADMIN_LOGIN,))
-        conn.commit()
-    except: pass
-    cur.close(); conn.close()
 
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(f"init_db error: {e}")
+
 def hash_pwd(p): return hashlib.sha256(p.encode()).hexdigest()
 
 LOGIN_HTML = '''
