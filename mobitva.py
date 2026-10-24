@@ -115,11 +115,11 @@ body{background:#1a1206;margin:0;display:flex;justify-content:center;min-height:
 GAME_HTML = '''
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{background:#c7b089;margin:0;padding:0 0 60px 0;font-family:Arial,sans-serif;}
+body{background:url('{{ bg_image }}') no-repeat center center fixed; background-size:cover; background-color:#c7b089;margin:0;padding:0 0 60px 0;font-family:Arial,sans-serif;}
 .top{ background: #e8dcc0; border:2px solid #5a3a18; border-radius:10px; margin:5px; padding:5px 8px; display:flex; justify-content:space-around; font-weight:bold; font-size:16px; }
 .frame{ margin:5px; border:4px solid #5a3a18; border-left:8px solid #5a3a18; border-right:8px solid #5a3a18; background:#000; position:relative; }
 .frame img{width:100%; display:block; height:210px; object-fit:cover;}
-.loc-name{ background: url('') #e8dcc0; margin:-15px 40px 0 40px; position:relative; text-align:center; padding:8px; font-weight:bold; border:1px solid #5a3a18; box-shadow:0 2px 3px #0005; z-index:5; }
+.loc-name{ background: url('{{ bg_image }}') #e8dcc0; background-size:cover;
 .btns{display:flex; justify-content:space-between; margin:10px 10px;}
 .btn{ background:#e48a2e; border:2px solid #5a3a18; padding:10px 0; width:48%; text-align:center; font-weight:bold; color:#000; text-decoration:none; }
 .menu{ background:#e8dcc0; border:2px solid #5a3a18; margin:5px 10px; padding:0 12px; }
@@ -209,11 +209,22 @@ def index():
 def game():
     if "uid" not in session: return redirect("/")
     conn=get_db(); cur=conn.cursor(); cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],)); p=cur.fetchone()
+    if not p: session.clear(); return redirect("/")
     cur.execute("SELECT * FROM locations ORDER BY min_level"); locs=cur.fetchall()
     cur.execute("SELECT * FROM quests ORDER BY id DESC LIMIT 5"); quests=cur.fetchall()
+    # --- ФОНЫ ДЛЯ НОВЫХ ЛОК ---
+        current_code = request.args.get("loc") or (p[11] if len(p)>11 and p[11] else "lager")
+    alias = {"kremnev":"lager", "gati":"zastava", "yarmarka":"oboz"}
+    current_code = alias.get(current_code, current_code)
+    bg_map = {
+        "lager": "/static/lager.jpg",
+        "zastava": "/static/zastava.jpg", 
+        "oboz": "/static/oboz.jpg",
+        "bank": "/static/oboz.jpg"
+    }
+    bg_image = bg_map.get(current_code, "/static/lager.jpg")
     cur.close(); conn.close(); is_admin=p[10] if len(p)>10 else False
-    return render_template_string(GAME_HTML, p=p, is_admin=is_admin, locations=locs, quests=quests, msg=request.args.get("m",""))
-
+    return render_template_string(GAME_HTML, p=p, is_admin=is_admin, locations=locs, quests=quests, msg=request.args.get("m"), bg_image=bg_image, current_loc=current_code)
 @app.route("/admin", methods=["GET","POST"])
 def admin():
     if "uid" not in session: return redirect("/")
