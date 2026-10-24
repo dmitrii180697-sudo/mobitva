@@ -208,22 +208,33 @@ def index():
 @app.route("/game")
 def game():
     if "uid" not in session: return redirect("/")
-    conn=get_db(); cur=onn.cursor(); cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],)); p=cur.fetchone()
+    conn=get_db(); cur=conn.cursor()
+    cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],))
+    p=cur.fetchone()
     if not p: session.clear(); return redirect("/")
-    cur.execute("SELECT * FROM locations ORDER BY min_level"); locs=cur.fetchall()
-    cur.execute("SELECT * FROM quests ORDER BY id DESC LIMIT 5"); quests=cur.fetchall()
-    # --- ФОНЫ ДЛЯ НОВЫХ ЛОК ---
-    current_code = request.args.get("loc") or (p[11] if len(p)>11 and p[11] else "lager")
+    try:
+        cur.execute("SELECT * FROM locations ORDER BY min_level")
+        locs=cur.fetchall()
+    except:
+        locs=[]
+    try:
+        cur.execute("SELECT * FROM quests ORDER BY id DESC LIMIT 5")
+        quests=cur.fetchall()
+    except:
+        quests=[]
+    cur.close(); conn.close()
+
+    current_code = request.args.get("loc") or session.get("current_loc") or "lager"
     alias = {"kremnev":"lager", "gati":"zastava", "yarmarka":"oboz"}
     current_code = alias.get(current_code, current_code)
     bg_map = {
         "lager": "/static/lager.jpg",
-        "zastava": "/static/zastava.jpg", 
+        "zastava": "/static/zastava.jpg",
         "oboz": "/static/oboz.jpg",
         "bank": "/static/oboz.jpg"
     }
     bg_image = bg_map.get(current_code, "/static/lager.jpg")
-    cur.close(); conn.close(); is_admin=p[10] if len(p)>10 else False
+    is_admin = p[10] if len(p)>10 else False
     return render_template_string(GAME_HTML, p=p, is_admin=is_admin, locations=locs, quests=quests, msg=request.args.get("m"), bg_image=bg_image, current_loc=current_code)
 @app.route("/admin", methods=["GET","POST"])
 def admin():
@@ -288,27 +299,10 @@ def bank():
 @app.route("/loc/<code>")
 def go_loc(code):
     if "uid" not in session: return redirect("/")
-    # маппинг старых названий на новые
     alias = {"kremnev":"lager", "gati":"zastava", "yarmarka":"oboz"}
     real_code = alias.get(code, code)
-
-    conn=get_db(); cur=conn.cursor()
-    cur.execute("SELECT * FROM locations WHERE code=%s",(real_code,))
-    loc=cur.fetchone()
-    if not loc:
-        try:
-            cur.execute("INSERT INTO locations (code, name) VALUES (%s,%s) ON CONFLICT DO NOTHING",(real_code, real_code.capitalize(),))
-        except:
-            pass
-        cur.execute("SELECT * FROM locations WHERE code=%s",(code,))
-        loc=cur.fetchone()
-
-    # объявляем игроку текущую локу
-    cur.execute("UPDATE players SET current_loc=%s WHERE id=%s",(real_code, session["uid"],))
-    conn.commit()
-    cur.close(); conn.close()
+    session["current_loc"] = real_code
     return redirect(f"/game?loc={real_code}")
-
 @app.route("/gati")
 def gati_page():
     return redirect("/loc/zastava")
