@@ -277,17 +277,32 @@ def bank():
 @app.route("/loc/<code>")
 def go_loc(code):
     if "uid" not in session: return redirect("/")
+    # маппинг старых названий на новые
+    alias = {"kremnev":"lager", "gati":"zastava", "yarmarka":"oboz"}
+    real_code = alias.get(code, code)
+
     conn=get_db(); cur=conn.cursor()
-    cur.execute("SELECT * FROM locations WHERE code=%s",(code,))
+    cur.execute("SELECT * FROM locations WHERE code=%s",(real_code,))
     loc=cur.fetchone()
     if not loc:
-        cur.close(); conn.close()
-        return redirect("/game?m=Location not found")
-    cur.execute("UPDATE players SET current_loc=%s WHERE id=%s",(code, session["uid"]))
+        # если новой локи нет в базе — создаем
+        try:
+            cur.execute("INSERT INTO locations (code, name) VALUES (%s,%s) ON CONFLICT DO NOTHING",(real_code, real_code))
+        except:
+            pass
+        # все равно пытаемся взять старую если есть
+        cur.execute("SELECT * FROM locations WHERE code=%s",(code,))
+        loc=cur.fetchone()
+    
+    # обновляем игроку текущую локу
+    cur.execute("UPDATE players SET current_loc=%s WHERE id=%s",(real_code, session["uid"]))
     conn.commit()
     cur.close(); conn.close()
-    return redirect(f"/game?loc={code}")
+    return redirect(f"/game?loc={real_code}")
 
+@app.route("/gati")
+def gati_page():
+    return redirect("/loc/zastava")
 @app.route("/gati")
 def gati_page():
     return redirect("/loc/gati")
