@@ -138,7 +138,7 @@ body{background:url('{{ bg_image }}') no-repeat center center fixed; background-
 </div>
 
 <div class="frame">
-<img src="/static/loc1.jpg" onerror="this.src='/static/logo.jpg'">
+<img src="{{ bg_image }}" onerror="this.src='/static/logo.jpg'">
 </div>
 
 <div class="loc-name">{{ current_loc if current_loc is defined else 'Кремнев' }}</div>
