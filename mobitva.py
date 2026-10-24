@@ -23,6 +23,7 @@ def init_db():
         weapon INT DEFAULT 0,
         strength INT DEFAULT 5,
         defense INT DEFAULT 0,
+        hp INT DEFAULT 25,
         wins INT DEFAULT 0,
         is_admin BOOLEAN DEFAULT FALSE,
         location TEXT DEFAULT 'center'
@@ -68,7 +69,15 @@ def init_db():
     if not cur.fetchone():
         cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,1000,10,10)",(ADMIN_LOGIN,hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()))
     conn.commit(); conn.close()
-
+try:
+    conn = psycopg2.connect(DATABASE_URL)
+    cur = conn.cursor()
+    cur.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS hp INT DEFAULT 25")
+    cur.execute("UPDATE players SET hp=25 WHERE hp IS NULL OR hp=0")
+    conn.commit()
+    conn.close()
+except:
+    pass
 try:
     init_db()
 except Exception as e:
