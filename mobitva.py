@@ -149,10 +149,9 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 </div>
 
 <div class="menu">
-<div class="row"><a href="/loc/kremnev" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>🏠 Кремнев</span><span>➡️</span></a></div>
-<div class="row"><a href="/loc/gati" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Гати</span><span>➡️</span></a></div>
-<div class="row"><a href="/loc/yarmarka" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Ярмарка</span><span>➡️</span></a></div>
-<div class="row"><a href="/loc/bank" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Банк</span><span>➡️</span></a></div>
+<div class="row"><a href="/loc/kremnev" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>🏠 Лагерь</span><span>➡️</span></a></div>
+<div class="row"><a href="/loc/gati" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Застава</span><span>➡️</span></a></div>
+<div class="row"><a href="/loc/yarmarka" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Обоз</span><span>➡️</span></a></div>
 <div class="row"><span>Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}}</span></div>
 {% for loc in locations %}<div class="row"><a href="/loc/{{loc[1]}}">{{loc[1]}} - {{loc[2]}}</a></div>{% endfor %}
 {% if msg %}<div style="padding:10px; background:#5a3a18; color:#ffe9a0">{{msg}}</div>{% endif %}
