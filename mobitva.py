@@ -208,7 +208,7 @@ def index():
 @app.route("/game")
 def game():
     if "uid" not in session: return redirect("/")
-    conn=get_db(); cur=conn.cursor(); cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],)); p=cur.fetchone()
+    conn=get_db(); cur=onn.cursor(); cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],)); p=cur.fetchone()
     if not p: session.clear(); return redirect("/")
     cur.execute("SELECT * FROM locations ORDER BY min_level"); locs=cur.fetchall()
     cur.execute("SELECT * FROM quests ORDER BY id DESC LIMIT 5"); quests=cur.fetchall()
@@ -296,17 +296,15 @@ def go_loc(code):
     cur.execute("SELECT * FROM locations WHERE code=%s",(real_code,))
     loc=cur.fetchone()
     if not loc:
-        # если новой локи нет в базе — создаем
         try:
-            cur.execute("INSERT INTO locations (code, name) VALUES (%s,%s) ON CONFLICT DO NOTHING",(real_code, real_code))
+            cur.execute("INSERT INTO locations (code, name) VALUES (%s,%s) ON CONFLICT DO NOTHING",(real_code, real_code.capitalize(),))
         except:
             pass
-        # все равно пытаемся взять старую если есть
         cur.execute("SELECT * FROM locations WHERE code=%s",(code,))
         loc=cur.fetchone()
-    
-    # обновляем игроку текущую локу
-    cur.execute("UPDATE players SET current_loc=%s WHERE id=%s",(real_code, session["uid"]))
+
+    # объявляем игроку текущую локу
+    cur.execute("UPDATE players SET current_loc=%s WHERE id=%s",(real_code, session["uid"],))
     conn.commit()
     cur.close(); conn.close()
     return redirect(f"/game?loc={real_code}")
