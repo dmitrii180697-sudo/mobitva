@@ -213,7 +213,7 @@ def game():
     cur.execute("SELECT * FROM locations ORDER BY min_level"); locs=cur.fetchall()
     cur.execute("SELECT * FROM quests ORDER BY id DESC LIMIT 5"); quests=cur.fetchall()
     # --- ФОНЫ ДЛЯ НОВЫХ ЛОК ---
-        current_code = request.args.get("loc") or (p[11] if len(p)>11 and p[11] else "lager")
+    current_code = request.args.get("loc") or (p[11] if len(p)>11 and p[11] else "lager")
     alias = {"kremnev":"lager", "gati":"zastava", "yarmarka":"oboz"}
     current_code = alias.get(current_code, current_code)
     bg_map = {
