@@ -141,7 +141,7 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 <img src="{{ bg_image }}" onerror="this.src='/static/logo.jpg'">
 </div>
 
-<div class="loc-name">{{ current_loc if current_loc is defined else 'Кремнев' }}</div>
+<div class="loc-name">{% if current_loc == 'lager' %}Лагерь{% elif current_loc == 'zastava' %}Застава{% elif current_loc == 'oboz' %}Обоз{% else %}Лагерь{% endif %}</div>
 
 <div class="btns">
 <a class="btn" href="/hunt">Охота</a>
