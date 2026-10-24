@@ -165,7 +165,7 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 {% if msg %}<div style="padding:10px; background:#5a3a18; color:#ffe9a0">{{msg}}</div>{% endif %}
 </div>
 
-<div class="bottom"><a href="/menu">Меню</a><span id="clock">00:00:00</span>{% if is_admin %}<a href="/admin" style="color:#ff4444;">Админка</a>{% else %}<a href="/hunt">Промысел</a>{% endif %}
+<div class="bottom"><a href="/menu">Меню</a><span id="clock">00:00:00</span><a href="/logout">Выход</a>
 <script>setInterval(()=>{document.getElementById('clock').innerText=new Date().toLocaleTimeString()},1000)</script>
 </body></html>
 '''
