@@ -303,12 +303,9 @@ def go_loc(code):
 @app.route("/gati")
 def gati_page():
     return redirect("/loc/zastava")
-def gati_page():
-    return redirect("/loc/gati")
-
 @app.route("/shop")
 def shop_page():
-    return redirect("/loc/yarmarka")
+    return redirect("/loc/oboz")
 
 @app.route("/bank_page")
 def bank_page_go():
