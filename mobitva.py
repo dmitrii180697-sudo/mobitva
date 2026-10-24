@@ -323,7 +323,16 @@ def bank_page_go():
 def quest_done():
     if "uid" not in session: return redirect("/")
     qid=request.args.get("id"); conn=get_db(); cur=conn.cursor(); cur.execute("SELECT reward_money,reward_exp FROM quests WHERE id=%s",(qid,)); q=cur.fetchone()
-    if q: cur.execute("UPDATE players SET money=money+%s, exp=exp+%s, wins=wins+1 WHERE id=%s",(q[0], q[1], session["uid"])); conn.commit(); m=f"Quest +{q[0]}"
+    if q: cur.execute("UPDATE players SET money=money+%s, exp=exp+%s, wins=wins+1 WHERE id=%s",(q[0], q[1], session["uid"]))
+# --- +20 ХП ЗА КАЖДЫЙ УРОВЕНЬ ---
+cur.execute("SELECT level, exp, hp FROM players WHERE id=%s",(session["uid"],))
+lvl, ex, hp_cur = cur.fetchone()
+if hp_cur is None: hp_cur = 25
+while ex >= lvl*100:
+    ex -= lvl*100
+    lvl += 1
+    hp_cur += 20
+cur.execute("UPDATE players SET level=%s, exp=%s, hp=%s WHERE id=%s",(lvl, ex, hp_cur, session["uid"])) conn.commit(); m=f"Quest +{q[0]}"
     else: m="Not found"
     cur.close(); conn.close(); return redirect(f"/game?m={m}")
 
