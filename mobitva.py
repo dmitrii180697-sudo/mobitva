@@ -161,7 +161,7 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 <div class="row"><a href="/loc/lager" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%;"><span>🏕️ Лагерь</span><span>➡️</span></a></div>
 <div class="row"><a href="/loc/zastava" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%;"><span>🛡️ Застава</span><span>➡️</span></a></div>
 <div class="row"><a href="/loc/oboz" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%;"><span>🛒 Обоз</span><span>➡️</span></a></div>
-<div class="row"><span>Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}}</span></div>
+<div class="row"><span>Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}}</span> {% if is_admin %}<a href="/admin" style="color:#ff2222;font-weight:bold;margin-left:12px;border:1px solid red;padding:2px 6px;border-radius:6px;">⚙ ADMIN</a>{% endif %}</div>
 {% if msg %}<div style="padding:10px; background:#5a3a18; color:#ffe9a0">{{msg}}</div>{% endif %}
 </div>
 
