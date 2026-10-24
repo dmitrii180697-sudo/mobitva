@@ -130,7 +130,7 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 </style>
 <div class="top">
 <span>⭐ {{p[4]}}</span>
-<span>❤️ {{p[5] if p|length>5 else 100}}</span>
+<span>❤️ {{ p[5] if p[5] != 0 else 25 }}</span>
 <span>🔵 {{p[3]}}</span>
 <span>🟡 0</span>
 <span>⚪ 0</span>
