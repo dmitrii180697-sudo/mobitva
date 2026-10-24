@@ -150,12 +150,12 @@ body{background:#c7b089;margin:0;padding:0 0 60px 0;font-family:Arial,sans-serif
 </div>
 
 <div class="menu">
-<div class="row"><span>🏠 Задания (8/0/0)</span><a class="btn" style="width:auto; padding:6px 22px" href="/pass">Пасс</a></div>
-<div class="row"><span>➡️ Гати</span><a href="/loc/gati" style="font-size:22px;text-decoration:none">⬅️</a></div>
-<div class="row"><span>➡️ Ярмарка</span><a href="/shop"></a></div>
-<div class="row"><span>➡️ Банк</span><a href="/bank"></a></div>
+<div class="row"><a href="/loc/kremnev" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>🏠 Кремнев</span><span>➡️</span></a></div>
+<div class="row"><a href="/loc/gati" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Гати</span><span>➡️</span></a></div>
+<div class="row"><a href="/loc/yarmarka" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Ярмарка</span><span>➡️</span></a></div>
+<div class="row"><a href="/loc/bank" style="text-decoration:none; color:#000; display:flex; justify-content:space-between; width:100%"><span>➡️ Банк</span><span>➡️</span></a></div>
 <div class="row"><span>Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}}</span></div>
-{% for loc in locations %}<div class="row"><a href="/loc/{{loc[0]}}">{{loc[1]}}</a></div>{% endfor %}
+{% for loc in locations %}<div class="row"><a href="/loc/{{loc[1]}}">{{loc[1]}} - {{loc[2]}}</a></div>{% endfor %}
 {% if msg %}<div style="padding:10px; background:#5a3a18; color:#ffe9a0">{{msg}}</div>{% endif %}
 </div>
 
