@@ -115,7 +115,7 @@ body{background:#1a1206;margin:0;display:flex;justify-content:center;min-height:
 GAME_HTML = '''
 <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{background:url('{{ bg_image }}') no-repeat center center fixed; background-size:cover; background-color:#3a2a18; margin:0; padding:0 0 70px 0; font-family:Arial;}
+body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 .top{ background:#e8dcc0; border:2px solid #5a3a18; border-radius:10px; margin:5px; padding:5px 8px; display:flex; justify-content:space-between;}
 .frame{ margin:5px; border:4px solid #5a3a18; border-left:8px solid #5a3a18; border-right:8px solid #5a3a18; background:rgba(232,220,192,0.92); border-radius:10px; overflow:hidden;}
 .frame img{width:100%; display:block; height:210px; object-fit:cover;}
