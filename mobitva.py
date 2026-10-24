@@ -120,7 +120,6 @@ h1{text-align:center;font-family:Cinzel;color:#3e260a;}
 a.btn{display:inline-block;padding:10px 14px;margin:5px;border-radius:8px;text-decoration:none;color:#fff;font-weight:bold;background:#7a4a1e;border:2px solid #3e260a;}
 a.btn.green{background:#2e7d32} a.btn.gold{background:#b78a0f}
 </style></head><body>
-<h1>MOBITVA</h1>
 <div class="card" style="text-align:center"><img src="/static/logo.jpg" style="width:100%;max-width:320px;border-radius:10px;border:2px solid #5a3a18;"></div>
 <div class="card">Player: {{p[1]}} | Lv:{{p[4]}} | Money:{{p[3]}} | Power:{{p[6]+p[7]}} | Wins:{{p[9]}} {% if is_admin %}| <a href="/admin" style="color:#8a1a1a;font-weight:bold">ADMIN PANEL</a>{% endif %}</div>
 <div class="card"><b>LOCATIONS:</b><br>{% for loc in locations %}<a class="btn" href="/fight?loc={{loc[1]}}">{{loc[2]}}</a>{% endfor %}</div>
