@@ -387,7 +387,7 @@ def hunt():
 <button onclick="hit()" style="background:#c00;color:#fff;border-radius:50%;width:85px;height:85px;font-size:36px;border:3px solid #fff">X</button>
 <a href="/game" style="margin-left:20px;color:#fff">^</a>
 </div>
-<div id="log" style="background:#000;color:#0f0;text-align:center;padding:8px">Zhmi X chtoby udarit</div>
+<div id="log" style="background:#000;color:#0f0;text-align:center;padding:6px;margin-top:6px">Grib HP 30/30</div>
 <script>
 let ehp=30;
 function hit(){
@@ -399,32 +399,7 @@ function hit(){
  if(ehp==0) document.getElementById('log').innerText='Pobedil!';
 }
 </script>
-""", p=p)
-function hit(){
- ehp-=7; if(ehp<0) ehp=0;
- document.getElementById('ehpbar').style.width=(ehp/30*100)+'%';
- let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
- document.getElementById('enemy').style.transform='translateX(-25px) scaleX(-1)';
- setTimeout(()=>document.getElementById('enemy').style.transform='scaleX(-1)',150);
- if(ehp==0) document.getElementById('log').innerText='Победил!';
-}
-</script>
 ''', p=p)
-let ehp=30; 
-function hit(){
- ehp-=7; if(ehp<0) ehp=0;
- document.getElementById('ehpbar').style.width=(ehp/30*100)+'%';
- let d=document.getElementById('dmg'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
- document.getElementById('enemy').style.transform='translateX(-25px) scaleX(-1)';
- setTimeout(()=>document.getElementById('enemy').style.transform='scaleX(-1)',150);
- document.getElementById('log').innerText='Ударил! У гриба '+ehp+' HP';
- if(ehp<=0){
-   document.getElementById('log').innerText='🏆 ПОБЕДА! +50 серебра';
-   fetch('/buy?item=bita').then(()=>{document.getElementById('arena').innerHTML='<h2 style=text-align:center;color:#ffd;margin-top:80px>🏆 ПОБЕДА! +50<br><br><a href=/hunt style=color:#0f0>Дальше</a> | <a href=/game style=color:#fff>Город</a></h2>';});
- }
-}
-</script>
-""", p=p)
 
 @app.route("/logout")
 def logout(): session.clear(); return redirect("/")
