@@ -27,46 +27,23 @@ def add_silver(uid, amount_silver):
 
 def init_db():
     conn=get_db(); cur=conn.cursor()
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS players (
-        id SERIAL PRIMARY KEY,
-        login TEXT UNIQUE,
-        password TEXT,
-        money INT DEFAULT 0,
-        gold INT DEFAULT 0,
-        silver INT DEFAULT 0,
-        rubies INT DEFAULT 0,
-        level INT DEFAULT 1,
-        exp INT DEFAULT 0,
-        weapon INT DEFAULT 0,
-        strength INT DEFAULT 5,
-        defense INT DEFAULT 0,
-        hp INT DEFAULT 25,
-        wins INT DEFAULT 0,
-        is_admin BOOLEAN DEFAULT FALSE,
-        location TEXT DEFAULT 'center'
-       );
-    """)
-    cur.execute("CREATE TABLE IF NOT EXISTS inventory (id SERIAL PRIMARY KEY)")
-    cur.execute("CREATE TABLE IF NOT EXISTS locations (code TEXT PRIMARY KEY)")
-    cur.execute("CREATE TABLE IF NOT EXISTS enemies (id SERIAL PRIMARY KEY)")
-    cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY)")
+    cur.execute("CREATE TABLE IF NOT EXISTS players (id SERIAL PRIMARY KEY, login TEXT UNIQUE, password TEXT, money INT DEFAULT 0, gold INT DEFAULT 0, silver INT DEFAULT 0, rubies INT DEFAULT 0, level INT DEFAULT 1, exp INT DEFAULT 0, weapon INT DEFAULT 0, strength INT DEFAULT 5, defense INT DEFAULT 0, hp INT DEFAULT 25, wins INT DEFAULT 0, is_admin BOOLEAN DEFAULT FALSE, location TEXT DEFAULT 'center')")
+    cur.execute("CREATE TABLE IF NOT EXISTS inventory (id SERIAL PRIMARY KEY, player_id INT, item_name TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS locations (code TEXT PRIMARY KEY, name TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS enemies (id SERIAL PRIMARY KEY, name TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY, title TEXT)")
     cur.execute("SELECT COUNT(*) FROM locations")
     if cur.fetchone()[0]==0:
-        cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','')")
+        cur.execute("INSERT INTO locations VALUES ('center')")
     cur.execute("SELECT * FROM players WHERE login=%s",(ADMIN_LOGIN,))
     if not cur.fetchone():
         cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,100,1,10)",(ADMIN_LOGIN,ADMIN_PASSWORD))
     conn.commit()
+    cur.close()
     conn.close()
-    except Exception as e:
-        print(e)
-    pass
-try:
-    init_db()
-except Exception as e:
-    print(f"init_db error: {e}")
 
+init_db()
+    
 def hash_pwd(p): return hashlib.sha256(p.encode()).hexdigest()
 
 LOGIN_HTML = '''
