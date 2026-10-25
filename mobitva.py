@@ -375,7 +375,7 @@ def hunt():
     p=cur.fetchone()
     cur.close(); conn.close()
     if not p: return redirect("/")
-    return render_template_string("""
+    return render_template_string('''
 <div style="display:flex;justify-content:space-between;background:#2a1a0a;color:#ffd;padding:6px"><span> LVL {{p[7]}} HP {{p[12]}}</span><span>Grib 30 HP</span><span>ATK {{p[5]}}</span></div>
 <div id="arena" style="position:relative;height:320px;background:#3a2a1a;border:4px solid #5a3e1b;display:flex;justify-content:space-between;align-items:flex-end;padding:15px">
 <img id="hero" src="/static/hero_m.png" style="width:130px">
@@ -409,7 +409,7 @@ function hit(){
  if(ehp==0) document.getElementById('log').innerText='Победил!';
 }
 </script>
-""", p=p)
+''', p=p)
 let ehp=30; 
 function hit(){
  ehp-=7; if(ehp<0) ehp=0;
