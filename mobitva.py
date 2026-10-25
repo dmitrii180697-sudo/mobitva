@@ -242,6 +242,22 @@ def game():
     bg_image = bg_map.get(current_code, "/static/lager.jpg")
     is_admin = p[10] if len(p)>10 else False
     return render_template_string(GAME_HTML, p=p, is_admin=is_admin, locations=locs, quests=quests, msg=request.args.get("m"), bg_image=bg_image, current_loc=current_code)
+@app.route("/hunt")
+def hunt():
+    if "uid" not in session: return redirect("/")
+    loc = request.args.get("loc") or session.get("current_loc") or "lager"
+    mobs = [{"code":"grib","name":"Гриб","hp":30,"lvl":1,"img":"/static/grib.png","gold":5,"exp":5}] if loc=="lager" else []
+    html = """
+    <div style='padding:20px'><h2>🏕️ Промысел</h2>
+    {% for m in mobs %}<div style='border:2px solid #444; padding:10px; margin:10px 0; display:flex; gap:10px;'><img src='{{ m.img }}' width='80'><div><b>{{ m.name }}</b><br>{{ m.hp }} HP<br><a href='/attack?mob={{ m.code }}'>⚔️ Напасть</a></div></div>{% endfor %}
+    <br><a href='/game'>⬅️ Назад</a></div>
+    """
+    return render_template_string(html, mobs=mobs)
+
+@app.route("/attack")
+def attack():
+    return "Ты ударил Гриба! +5 золота<br><a href='/hunt'>Назад</a>"
+
 @app.route("/admin", methods=["GET","POST"])
 def admin():
     if "uid" not in session: return redirect("/")
