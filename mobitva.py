@@ -85,17 +85,16 @@ def init_db():
         reward_exp INT,
         is_active BOOLEAN DEFAULT TRUE
     )
-    """)
+        """)
     cur.execute("SELECT COUNT(*) FROM locations")
     if cur.fetchone()[0]==0:
-        cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','Центральная площадь'),('forest','Темный Лес',2,'','Опасный лес'),('dungeon','Подземелье',3,'','Глубокое подземелье')")
-        cur.execute("INSERT INTO enemies (name,level,hp,damage,reward_money,reward_exp,location_code) VALUES ('Гопник',1,30,5,10,10,'center'),('Волк',2,50,10,20,20,'forest'),('Скелет',3,80,15,30,30,'dungeon')")
-        cur.execute("INSERT INTO quests (title,description,reward_money,reward_exp) VALUES ('Первый бой','Победи 1 врага',50,20)")
-        cur.execute("SELECT * FROM players WHERE login=%s",(ADMIN_LOGIN,))
+        cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','Центральная площадь')")
+        cur.execute("INSERT INTO locations VALUES ('forest','Лес',2,'','Темный лес')")
+    cur.execute("SELECT * FROM players WHERE login=%s",(ADMIN_LOGIN,))
     if not cur.fetchone():
-        cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,1000,10,10)",(ADMIN_LOGIN,hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()))
-    conn.commit(); conn.close()
-try:
+        cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,100,1,10)",(ADMIN_LOGIN,ADMIN_PASSWORD))
+    conn.commit()
+    conn.close()
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
     cur.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS hp INT DEFAULT 25")
