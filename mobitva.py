@@ -375,19 +375,16 @@ def hunt():
     p=cur.fetchone()
     cur.close(); conn.close()
     if not p: return redirect("/")
-    return render_template_string('''
-<div style="display:flex;justify-content:space-between;background:#2a1a0a;color:#ffd;padding:6px"><span> LVL {{p[7]}} HP {{p[12]}}</span><span>Grib 30 HP</span><span>ATK {{p[5]}}</span></div>
-<div id="arena" style="position:relative;height:320px;background:#3a2a1a;border:4px solid #5a3e1b;display:flex;justify-content:space-between;align-items:flex-end;padding:15px">
-<img id="hero" src="/static/hero_m.png" style="width:130px">
-<img id="enemy" src="/static/grib.png" style="width:130px;transform:scaleX(-1)">
-<div id="ehpbar" style="position:absolute;top:10px;right:10px;width:120px;height:12px;background:#f00"></div>
-<div id="dmg2" style="position:absolute;top:50%;left:50%;color:red;font-weight:bold;font-size:24px;display:none">-7</div>
+        return render_template_string('''
+<div style="display:flex;justify-content:space-between;align-items:flex-end;height:320px;background:linear-gradient(#87CEEB,#228B22);border:3px solid #000;padding:10px;position:relative">
+<img id="hero" src="/static/hero_m.png" style="width:130px;height:130px;object-fit:contain">
+<img id="enemy" src="/static/grib.png" style="width:130px;height:130px;object-fit:contain;transform:scaleX(-1)">
+<div id="dmg2" style="position:absolute;left:65%;top:40%;color:yellow;font-weight:bold;font-size:28px;display:none">-7</div>
 </div>
-<div style="text-align:center;background:#1a0f00;padding:12px">
-<button onclick="hit()" style="background:#c00;color:#fff;border-radius:50%;width:85px;height:85px;font-size:36px;border:3px solid #fff">X</button>
-<a href="/game" style="margin-left:20px;color:#fff">^</a>
-</div>
+<div style="margin-top:6px;background:#333;height:12px;border:1px solid #000"><div id="ehpbar" style="width:100%;height:100%;background:red"></div></div>
 <div id="log" style="background:#000;color:#0f0;text-align:center;padding:6px;margin-top:6px">Grib HP 30/30</div>
+<button onclick="hit()" style="width:100%;margin-top:8px;height:85px;background:darkred;color:white;font-size:22px;border:3px solid #000;border-radius:12px">X УДАР</button>
+<a href="/game" style="display:block;text-align:center;margin-top:8px;color:white;background:#444;padding:6px">Назад</a>
 <script>
 let ehp=30;
 function hit(){
@@ -396,11 +393,10 @@ function hit(){
  let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
  document.getElementById('enemy').style.transform='translateX(-25px) scaleX(-1)';
  setTimeout(()=>document.getElementById('enemy').style.transform='scaleX(-1)',150);
- if(ehp==0) document.getElementById('log').innerText='Pobedil!';
+ if(ehp==0) document.getElementById('log').innerText='Pobedil! +5g';
 }
 </script>
 ''', p=p)
-
 @app.route("/logout")
 def logout(): session.clear(); return redirect("/")
 
