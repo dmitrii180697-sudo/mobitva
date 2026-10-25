@@ -371,8 +371,8 @@ def quest_done():
         m="Not found"
     cur.close(); conn.close(); return redirect(f"/game?m={m}")
 
-@app.route("/hunt")
-def hunt():
+@app.route("/hunt", endpoint="hunt_new")
+def hunt_new():
     if "uid" not in session: return redirect("/")
     conn=get_db(); cur=conn.cursor()
     cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],))
