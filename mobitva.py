@@ -155,11 +155,11 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 .bottom a{color:#fff; text-decoration:none}
 </style>
 <div class="top">
-<span>⭐ {{p[4]}}</span>
-<span>❤️ {{ p[5] if p[5] != 0 else 25 }}</span>
-<span>🔵 {{p[3]}}</span>
-<span>🟡 0</span>
-<span>⚪ 0</span>
+<span>⭐ {{p[7]}}</span>
+<span>❤️ {{p[12] if p[12]!=0 else 25}}</span>
+<span>🔵 {{p[6]}}</span>
+<span>🟡 {{p[4]}}</span>
+<span>⚪ {{p[5]}}</span>
 </div>
 
 <div class="frame">
