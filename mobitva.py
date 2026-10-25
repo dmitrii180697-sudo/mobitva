@@ -76,17 +76,15 @@ def init_db():
         location_code TEXT
     )
     """)
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS quests (
-        id SERIAL PRIMARY KEY,
-        title TEXT,
-        description TEXT,
-        reward_money INT,
-        reward_exp INT,
-        is_active BOOLEAN DEFAULT TRUE
-    )
-        """)
+        cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY, title TEXT, description TEXT, reward_money INT, reward_exp INT, is_active BOOLEAN DEFAULT TRUE)")
     cur.execute("SELECT COUNT(*) FROM locations")
+    if cur.fetchone()[0]==0:
+        cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','Центральная площадь')")
+    cur.execute("SELECT * FROM players WHERE login=%s",(ADMIN_LOGIN,))
+    if not cur.fetchone():
+        cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,100,1,10)",(ADMIN_LOGIN,ADMIN_PASSWORD))
+    conn.commit()
+    conn.close()
     if cur.fetchone()[0]==0:
         cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','Центральная площадь')")
         cur.execute("INSERT INTO locations VALUES ('forest','Лес',2,'','Темный лес')")
