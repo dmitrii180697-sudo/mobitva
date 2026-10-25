@@ -341,17 +341,6 @@ def hunt_win():
     cur.execute("UPDATE players SET money=money+5, exp=exp+5 WHERE id=%s",(session["uid"],))
     conn.commit(); cur.close(); conn.close()
     return "ok"
-let ehp=30;
-function hit(){
- ehp-=7; if(ehp<0) ehp=0;
- document.getElementById('ehpbar').style.width=(ehp/30*100)+'%';
- let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
- document.getElementById('enemy').style.transform='translateX(-25px) scaleX(-1)';
- setTimeout(()=>document.getElementById('enemy').style.transform='scaleX(-1)',150);
- if(ehp==0) document.getElementById('log').innerText='Pobedil! +5g';
-}
-</script>
-''', p=p)
 @app.route("/logout")
 def logout(): session.clear(); return redirect("/")
 
