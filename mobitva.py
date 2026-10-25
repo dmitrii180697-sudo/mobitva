@@ -9,6 +9,21 @@ ADMIN_PASSWORD = "admin123"
 
 def get_db():
     return psycopg2.connect(DATABASE_URL, sslmode='require')
+def add_silver(uid, amount_silver):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT gold, silver FROM players WHERE id=%s", (uid,))
+    row = cur.fetchone()
+    g = row[0] if row and row[0] is not None else 0
+    s = row[1] if row and len(row)>1 and row[1] is not None else 0
+    s += amount_silver
+    g += s // 100
+    s = s % 100
+    cur.execute("UPDATE players SET gold=%s, silver=%s WHERE id=%s", (g, s, uid))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return g, s
 
 def init_db():
     conn=get_db(); cur=conn.cursor()
@@ -17,17 +32,19 @@ def init_db():
         id SERIAL PRIMARY KEY,
         login TEXT UNIQUE,
         password TEXT,
-        money INT DEFAULT 0,
-        level INT DEFAULT 1,
-        exp INT DEFAULT 0,
-        weapon INT DEFAULT 0,
-        strength INT DEFAULT 5,
-        defense INT DEFAULT 0,
-        hp INT DEFAULT 25,
-        wins INT DEFAULT 0,
-        is_admin BOOLEAN DEFAULT FALSE,
-        location TEXT DEFAULT 'center'
-    )
+                    money INT DEFAULT 0,
+            gold INT DEFAULT 0,
+            silver INT DEFAULT 0,
+            rubies INT DEFAULT 0,
+            level INT DEFAULT 1,
+            exp INT DEFAULT 0,
+            weapon INT DEFAULT 0,
+            strength INT DEFAULT 5,
+            defense INT DEFAULT 0,
+            hp INT DEFAULT 25,
+            wins INT DEFAULT 0,
+            is_admin BOOLEAN DEFAULT FALSE,
+            location TEXT DEFAULT 'center'
     """)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS locations (
@@ -143,7 +160,6 @@ body{background:#d8c4a0; margin:0; padding:0 0 70px 0; font-family:Arial;}
 <span>🔵 {{p[3]}}</span>
 <span>🟡 0</span>
 <span>⚪ 0</span>
-<span>🟤 0</span>
 </div>
 
 <div class="frame">
