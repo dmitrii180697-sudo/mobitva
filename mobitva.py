@@ -310,7 +310,7 @@ def hunt():
     p=cur.fetchone()
     cur.close(); conn.close()
     if not p: return redirect("/")
-        return render_template_string('''
+    return render_template_string('''
 <div style="display:flex;justify-content:space-between;align-items:flex-end;height:320px;background:linear-gradient(#87CEEB,#228B22);border:3px solid #000;padding:10px;position:relative">
 <img id="hero" src="/static/hero_m.png" style="width:130px;height:130px;object-fit:contain">
 <img id="enemy" src="/static/grib.png" style="width:130px;height:130px;object-fit:contain;transform:scaleX(-1)">
