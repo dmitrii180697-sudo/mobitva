@@ -48,35 +48,10 @@ def init_db():
     );
     """)
     cur.execute("""
-    CREATE TABLE IF NOT EXISTS inventory (
-        id SERIAL PRIMARY KEY,
-        player_id INT,
-                item_name TEXT
-    );
-    """)
-    conn.commit()
-    cur.close(); conn.close()
-    CREATE TABLE IF NOT EXISTS locations (
-        code TEXT PRIMARY KEY,
-        name TEXT,
-        min_level INT DEFAULT 1,
-        image TEXT,
-        description TEXT
-    )
-    """)
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS enemies (
-        id SERIAL PRIMARY KEY,
-        name TEXT,
-        level INT,
-        hp INT,
-        damage INT,
-        reward_money INT,
-        reward_exp INT,
-        location_code TEXT
-    )
-    """)
-        cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY, title TEXT, description TEXT, reward_money INT, reward_exp INT, is_active BOOLEAN DEFAULT TRUE)")
+        cur.execute("CREATE TABLE IF NOT EXISTS inventory (id SERIAL PRIMARY KEY, player_id INT, item_name TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS locations (code TEXT PRIMARY KEY, name TEXT, min_level INT DEFAULT 1, image TEXT, description TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS enemies (id SERIAL PRIMARY KEY, name TEXT, level INT, hp INT, damage INT, reward_money INT, reward_exp INT, location_code TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS quests (id SERIAL PRIMARY KEY, title TEXT, description TEXT, reward_money INT, reward_exp INT, is_active BOOLEAN DEFAULT TRUE)")
     cur.execute("SELECT COUNT(*) FROM locations")
     if cur.fetchone()[0]==0:
         cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','Центральная площадь')")
@@ -85,19 +60,6 @@ def init_db():
         cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,100,1,10)",(ADMIN_LOGIN,ADMIN_PASSWORD))
     conn.commit()
     conn.close()
-    if cur.fetchone()[0]==0:
-        cur.execute("INSERT INTO locations VALUES ('center','Центр Города',1,'','Центральная площадь')")
-        cur.execute("INSERT INTO locations VALUES ('forest','Лес',2,'','Темный лес')")
-    cur.execute("SELECT * FROM players WHERE login=%s",(ADMIN_LOGIN,))
-    if not cur.fetchone():
-        cur.execute("INSERT INTO players (login,password,is_admin,money,level,strength) VALUES (%s,%s,TRUE,100,1,10)",(ADMIN_LOGIN,ADMIN_PASSWORD))
-    conn.commit()
-    conn.close()
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
-    cur.execute("ALTER TABLE players ADD COLUMN IF NOT EXISTS hp INT DEFAULT 25")
-    cur.execute("UPDATE players SET hp=25 WHERE hp IS NULL OR hp=0")
-    conn.commit()
     conn.close()
 except:
     pass
