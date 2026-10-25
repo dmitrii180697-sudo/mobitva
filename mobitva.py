@@ -367,7 +367,6 @@ def quest_done():
     else:
         m="Not found"
     cur.close(); conn.close(); return redirect(f"/game?m={m}")
-
 @app.route("/hunt")
 def hunt():
     if "uid" not in session: return redirect("/")
@@ -377,19 +376,40 @@ def hunt():
     cur.close(); conn.close()
     if not p: return redirect("/")
     return render_template_string("""
-<div style="display:flex;justify-content:space-between;background:#2a1a0a;color:#ffd;padding:6px"><span>⭐ {{p[7]}} ❤️ {{p[12]}}</span><span>Гриб 30 HP</span><span>💰 {{p[5]}}</span></div>
+<div style="display:flex;justify-content:space-between;background:#2a1a0a;color:#ffd;padding:6px"><span> LVL {{p[7]}} HP {{p[12]}}</span><span>Grib 30 HP</span><span>ATK {{p[5]}}</span></div>
 <div id="arena" style="position:relative;height:320px;background:#3a2a1a;border:4px solid #5a3e1b;display:flex;justify-content:space-between;align-items:flex-end;padding:15px">
 <img id="hero" src="/static/hero_m.png" style="width:130px">
-<img id="enemy" src="/static/grib.png" style="width:130px;transform:scaleX(-1);transition:0.15s">
-<div style="position:absolute;top:10px;right:10px;width:120px;height:12px;background:#000;border:1px solid #fff"><div id="ehpbar" style="width:100%;height:100%;background:#0f0"></div></div>
-<div id="dmg" style="position:absolute;top:50%;left:50%;color:red;font-weight:bold;font-size:24px;display:none">-7</div>
+<img id="enemy" src="/static/grib.png" style="width:130px;transform:scaleX(-1)">
+<div id="ehpbar" style="position:absolute;top:10px;right:10px;width:120px;height:12px;background:#f00"></div>
+<div id="dmg2" style="position:absolute;top:50%;left:50%;color:red;font-weight:bold;font-size:24px;display:none">-7</div>
 </div>
 <div style="text-align:center;background:#1a0f00;padding:12px">
-<button onclick="hit()" style="background:#c00;color:#fff;border-radius:50%;width:85px;height:85px;font-size:36px;border:3px solid #fff">⚔️</button>
-<a href="/game" style="margin-left:20px;color:#fff">🏃</a>
+<button onclick="hit()" style="background:#c00;color:#fff;border-radius:50%;width:85px;height:85px;font-size:36px;border:3px solid #fff">X</button>
+<a href="/game" style="margin-left:20px;color:#fff">^</a>
 </div>
-<div id="log" style="background:#000;color:#0f0;text-align:center;padding:8px">Жми ⚔️ чтобы ударить</div>
+<div id="log" style="background:#000;color:#0f0;text-align:center;padding:8px">Zhmi X chtoby udarit</div>
 <script>
+let ehp=30;
+function hit(){
+ ehp-=7; if(ehp<0) ehp=0;
+ document.getElementById('ehpbar').style.width=(ehp/30*100)+'%';
+ let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
+ document.getElementById('enemy').style.transform='translateX(-25px) scaleX(-1)';
+ setTimeout(()=>document.getElementById('enemy').style.transform='scaleX(-1)',150);
+ if(ehp==0) document.getElementById('log').innerText='Pobedil!';
+}
+</script>
+""", p=p)
+function hit(){
+ ehp-=7; if(ehp<0) ehp=0;
+ document.getElementById('ehpbar').style.width=(ehp/30*100)+'%';
+ let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
+ document.getElementById('enemy').style.transform='translateX(-25px) scaleX(-1)';
+ setTimeout(()=>document.getElementById('enemy').style.transform='scaleX(-1)',150);
+ if(ehp==0) document.getElementById('log').innerText='Победил!';
+}
+</script>
+""", p=p)
 let ehp=30; 
 function hit(){
  ehp-=7; if(ehp<0) ehp=0;
