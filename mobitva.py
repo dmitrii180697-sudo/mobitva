@@ -32,21 +32,30 @@ def init_db():
         id SERIAL PRIMARY KEY,
         login TEXT UNIQUE,
         password TEXT,
-                    money INT DEFAULT 0,
-            gold INT DEFAULT 0,
-            silver INT DEFAULT 0,
-            rubies INT DEFAULT 0,
-            level INT DEFAULT 1,
-            exp INT DEFAULT 0,
-            weapon INT DEFAULT 0,
-            strength INT DEFAULT 5,
-            defense INT DEFAULT 0,
-            hp INT DEFAULT 25,
-            wins INT DEFAULT 0,
-            is_admin BOOLEAN DEFAULT FALSE,
-            location TEXT DEFAULT 'center'
+        money INT DEFAULT 0,
+        gold INT DEFAULT 0,
+        silver INT DEFAULT 0,
+        rubies INT DEFAULT 0,
+        level INT DEFAULT 1,
+        exp INT DEFAULT 0,
+        weapon INT DEFAULT 0,
+        strength INT DEFAULT 5,
+        defense INT DEFAULT 0,
+        hp INT DEFAULT 25,
+        wins INT DEFAULT 0,
+        is_admin BOOLEAN DEFAULT FALSE,
+        location TEXT DEFAULT 'center'
+    );
     """)
     cur.execute("""
+    CREATE TABLE IF NOT EXISTS inventory (
+        id SERIAL PRIMARY KEY,
+        player_id INT,
+                item_name TEXT
+    );
+    """)
+    conn.commit()
+    cur.close(); conn.close()
     CREATE TABLE IF NOT EXISTS locations (
         code TEXT PRIMARY KEY,
         name TEXT,
@@ -258,18 +267,6 @@ def game():
     bg_image = bg_map.get(current_code, "/static/lager.jpg")
     is_admin = p[10] if len(p)>10 else False
     return render_template_string(GAME_HTML, p=p, is_admin=is_admin, locations=locs, quests=quests, msg=request.args.get("m"), bg_image=bg_image, current_loc=current_code)
-@app.route("/hunt")
-def hunt():
-    if "uid" not in session: return redirect("/")
-    loc = request.args.get("loc") or session.get("current_loc") or "lager"
-    mobs = [{"code":"grib","name":"Гриб","hp":30,"lvl":1,"img":"/static/grib.png","gold":5,"exp":5}] if loc=="lager" else []
-    html = """
-    <div style='padding:20px'><h2>🏕️ Промысел</h2>
-    {% for m in mobs %}<div style='border:2px solid #444; padding:10px; margin:10px 0; display:flex; gap:10px;'><img src='{{ m.img }}' width='80'><div><b>{{ m.name }}</b><br>{{ m.hp }} HP<br><a href='/attack?mob={{ m.code }}'>⚔️ Напасть</a></div></div>{% endfor %}
-    <br><a href='/game'>⬅️ Назад</a></div>
-    """
-    return render_template_string(html, mobs=mobs)
-
 @app.route("/attack")
 def attack():
     return "Ты ударил Гриба! +5 золота<br><a href='/hunt'>Назад</a>"
