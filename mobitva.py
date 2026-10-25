@@ -371,6 +371,31 @@ def quest_done():
         m="Not found"
     cur.close(); conn.close(); return redirect(f"/game?m={m}")
 
+@app.route("/hunt")
+def hunt():
+    if "uid" not in session: return redirect("/")
+    conn=get_db(); cur=conn.cursor()
+    cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],))
+    p=cur.fetchone()
+    cur.close(); conn.close()
+    return render_template_string("""
+<div style="display:flex;justify-content:space-between;background:#2a1a0a;color:#ffd;padding:5px">
+<span>⭐ {{p[7]}} ❤️ {{p[12]}}</span><span>{{p[1]}} vs Гриб</span><span>💰 {{p[5]}} </span>
+</div>
+<div id="arena" style="position:relative;height:300px;background:#3a2a1a;border:3px solid #5a3e1b;display:flex;justify-content:space-between;align-items:flex-end;padding:20px">
+<img id="hero" style="width:120px" src="/static/hero_m.png">
+<img id="enemy" style="width:120px;transform:scaleX(-1)" src="/static/grib.png">
+</div>
+<div style="text-align:center;margin:10px">
+<button onclick="hit()" style="background:#c00;color:#fff;border-radius:50%;width:80px;height:80px;font-size:32px">⚔️</button>
+<a href="/game" style="margin-left:20px">🏃</a>
+</div>
+<div id="log" style="background:#000;color:#0f0;text-align:center;padding:5px">Бой начался!</div>
+<script>
+let ehp=30; function hit(){ehp-=7; if(ehp<=0){ fetch('/buy?item=bita').then(()=>{document.getElementById('arena').innerHTML='<h2 style=text-align:center>🏆 ПОБЕДА! +50 серебра<br><a href=/hunt>Дальше</a> <a href=/game>Город</a></h2>';}); } document.getElementById('enemy').style.transform='translateX(-20px) scaleX(-1)'; setTimeout(()=>document.getElementById('enemy').style.transform='scaleX(-1)',150); }
+</script>
+""", p=p)
+
 @app.route("/logout")
 def logout(): session.clear(); return redirect("/")
 
