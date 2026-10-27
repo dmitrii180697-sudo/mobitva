@@ -303,33 +303,25 @@ def quest_done():
         m="Not found"
     cur.close(); conn.close(); return redirect(f"/game?m={m}")
 MONSTERS = {
-    "grib": {"name": "Гриб", "hp": 30, "dmg": 5, "gold": 5, "img": "grib.png", "loc": "camp"}
+    "grib": {"name": "Гриб", "full": "Лесной гриб", "hp": 30, "dmg": 5, "gold": 29, "exp": 1, "trophy": "Шляпка гриба", "img": "grib.png", "trophy_img": "grib.png"}
 }
 
 @app.route("/camp")
 def camp():
     if "uid" not in session:
         return redirect("/")
-    # Только монстры лагеря
     m = MONSTERS["grib"]
     return render_template_string('''
     <div style="max-width:420px;margin:0 auto;background:#dcc89c;min-height:100vh;font-family:serif;border:4px solid #3d2a14">
       <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:8px"><span>Меню</span><span>Лагерь</span><a href="/game" style="color:#ffcc66;text-decoration:none">В город</a></div>
-      
-      <div style="background:linear-gradient(#4a7c2e,#2a4a1a);padding:20px;text-align:center;color:#fff">🌲 Локация: Лагерь в лесу 🌲<br><small>Тут водятся грибы</small></div>
-
+      <div style="background:linear-gradient(#4a7c2e,#2a4a1a);padding:20px;text-align:center;color:#fff">🌲 Локация: Лагерь 🌲</div>
       <div style="padding:10px">
-        <h3 style="text-align:center;margin:5px">Монстры в лагере:</h3>
-        <div style="background:#e8d5a3;border:2px solid #3d2a14;display:flex;align-items:center;padding:8px;margin-bottom:8px">
-          <img src="/static/grib.png" style="width:60px;height:60px;object-fit:contain;background:#fff;border:1px solid #000">
-          <div style="flex:1;padding-left:10px">
-            <b>{{m.name}}</b><br><small>30 ❤ | 5 ⚔ | Награда: 5💰</small><br><small>Только в лагере</small>
-          </div>
-          <a href="/hunt/grib" style="background:#c00;color:#fff;padding:10px 15px;text-decoration:none;border:2px outset #800;border-radius:6px;font-weight:bold">НАПАСТЬ</a>
+        <div style="background:#e8d5a3;border:2px solid #3d2a14;display:flex;align-items:center;padding:8px">
+          <img src="/static/grib.png" style="width:60px;background:#fff;border:1px solid #000">
+          <div style="flex:1;padding-left:10px"><b>{{m.full}}</b><br><small>30 ❤ | Награда: {{m.gold}}💰</small></div>
+          <a href="/hunt/grib" style="background:#c00;color:#fff;padding:10px 15px;text-decoration:none;border:2px outset #800;border-radius:6px">НАПАСТЬ</a>
         </div>
       </div>
-      
-      <div style="text-align:center;padding:10px"><small>Другие локации: Стаггород, Пещеры (скоро)</small></div>
     </div>
     ''', m=m)
 
@@ -340,40 +332,34 @@ def hunt(mid):
     if mid not in MONSTERS:
         return redirect("/camp")
     mon = MONSTERS[mid]
-    dmg = 10
     return render_template_string('''
     <div style="max-width:420px;margin:0 auto;background:#dcc89c;min-height:100vh;font-family:serif;border:4px solid #3d2a14">
-      <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:6px;font-size:12px"><span>Лагерь</span><span>Бой с {{mon.name}}</span><a href="/camp" style="color:#ffcc66;text-decoration:none">Сбежать</a></div>
+      <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:6px;font-size:12px"><span>Лагерь</span><span>Бой с {{mon.full}}</span><a href="/camp" style="color:#ffcc66;text-decoration:none">Сбежать</a></div>
       <div style="position:relative;height:240px;background:linear-gradient(#4a7c2e,#2a4a1a);border-bottom:4px solid #3d2a14;overflow:hidden">
-        <div style="display:flex;justify-content:space-between;padding:6px;background:rgba(0,0,0,0.5);color:#fff;font-weight:bold">
-          <span><img src="/static/hero_f.png" style="width:16px;vertical-align:middle"> Ты <span id="php">100</span>❤</span>
-          <span><img src="/static/{{mon.img}}" style="width:16px;vertical-align:middle"> {{mon.name}} <span id="ehp">{{mon.hp}}</span>❤</span>
-        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px;background:rgba(0,0,0,0.5);color:#fff;font-weight:bold"><span>Ты <span id="php">100</span>❤</span><span>{{mon.name}} <span id="ehp">{{mon.hp}}</span>❤</span></div>
         <div style="position:absolute;bottom:0;width:100%;height:50px;background:#5a3a1a"></div>
-        <div id="hero" style="position:absolute;left:10px;bottom:15px;transition:0.2s;z-index:2"><img src="/static/hero_f.png" style="width:100px"></div>
-        <div id="enemy" style="position:absolute;right:20px;bottom:20px;transition:0.3s;z-index:2"><img src="/static/{{mon.img}}" style="width:95px"></div>
-        <div id="my_dmg" style="position:absolute;left:25%;top:60px;color:#ff0;font-size:36px;font-weight:bold;display:none;z-index:10;text-shadow:2px 2px #000">-{{dmg}}</div>
-        <div id="en_dmg" style="position:absolute;right:25%;top:60px;color:#f55;font-size:36px;font-weight:bold;display:none;z-index:10;text-shadow:2px 2px #000">-{{mon.dmg}}</div>
-        <div id="log" style="position:absolute;bottom:2px;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.7);color:#0f0;font-size:12px;padding:4px">Бой! Твой ход!</div>
+        <div id="hero" style="position:absolute;left:10px;bottom:15px;transition:0.2s"><img src="/static/hero_f.png" style="width:100px"></div>
+        <div id="enemy" style="position:absolute;right:20px;bottom:20px;transition:0.3s"><img src="/static/{{mon.img}}" style="width:95px"></div>
+        <div id="my_dmg" style="position:absolute;left:25%;top:60px;color:#ff0;font-size:36px;font-weight:bold;display:none;z-index:10">-10</div>
+        <div id="en_dmg" style="position:absolute;right:25%;top:60px;color:#f55;font-size:36px;font-weight:bold;display:none;z-index:10">-{{mon.dmg}}</div>
+        <div id="log" style="position:absolute;bottom:2px;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.7);color:#0f0;font-size:12px;padding:4px">Твой ход!</div>
       </div>
-      <div style="background:#b89a6a;padding:8px">
-        <div style="display:flex;justify-content:space-around">
-          <button id="b0" onclick="hit(0)" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">⚔️<br><small>ГОЛОВА</small></button>
-          <button id="b1" onclick="hit(1)" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">🗡️<br><small>ТЕЛО</small></button>
-          <button id="b2" onclick="hit(2)" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">⚔️<br><small>НОГИ</small></button>
-        </div>
-      </div>
+      <div style="background:#b89a6a;padding:8px"><div style="display:flex;justify-content:space-around">
+          <button id="b0" onclick="hit()" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">⚔️<br><small>ГОЛОВА</small></button>
+          <button id="b1" onclick="hit()" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">🗡️<br><small>ТЕЛО</small></button>
+          <button id="b2" onclick="hit()" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">⚔️<br><small>НОГИ</small></button>
+      </div></div>
     </div>
     <script>
-    let ehp={{mon.hp}}, php=100, pdmg={{dmg}}, edmg={{mon.dmg}}, turn=true;
-    function hit(t){
+    let ehp={{mon.hp}}, php=100, pdmg=10, edmg={{mon.dmg}}, total=0, turn=true;
+    function hit(){
       if(!turn) return; turn=false; b0.disabled=b1.disabled=b2.disabled=true;
       let h=document.getElementById('hero'); h.style.transform='translateX(90px)'; setTimeout(()=>h.style.transform='',180);
       setTimeout(()=>{
-        ehp-=pdmg; if(ehp<0) ehp=0; document.getElementById('ehp').innerText=ehp;
+        ehp-=pdmg; total+=pdmg; if(ehp<0) ehp=0; document.getElementById('ehp').innerText=ehp;
         let d=document.getElementById('my_dmg'); d.innerText='-'+pdmg; d.style.display='block'; setTimeout(()=>d.style.display='none',700);
         let e=document.getElementById('enemy'); e.style.transform='translateX(30px) scale(0.8)'; setTimeout(()=>e.style.transform='',300);
-        if(ehp<=0){ e.innerHTML='<img src="/static/{{mon.img}}" style="width:95px;filter:grayscale(1) opacity(0.4)">'; document.getElementById('log').innerText='Победа! +{{mon.gold}} золота'; setTimeout(()=>{ fetch('/hunt_win').then(()=>location.href='/camp'); },1200); return; }
+        if(ehp<=0){ location.href='/hunt_result/grib?dmg='+total; return; }
         setTimeout(enemyHit,800);
       },180);
     }
@@ -382,26 +368,61 @@ def hunt(mid):
       setTimeout(()=>{
         php-=edmg; if(php<0) php=0; document.getElementById('php').innerText=php;
         let d=document.getElementById('en_dmg'); d.innerText='-'+edmg; d.style.display='block'; setTimeout(()=>d.style.display='none',700);
-        let h=document.getElementById('hero'); h.style.transform='translateX(-20px)'; h.style.filter='brightness(0.5)'; setTimeout(()=>{h.style.transform=''; h.style.filter='';},300);
-        if(php<=0){ document.getElementById('log').innerText='Ты проиграл!'; setTimeout(()=>location.href='/camp',1500); return; }
-        turn=true; b0.disabled=b1.disabled=b2.disabled=false; document.getElementById('log').innerText='Твой ход!';
+        let h=document.getElementById('hero'); h.style.transform='translateX(-20px)'; setTimeout(()=>h.style.transform='',300);
+        if(php<=0){ location.href='/camp'; return; }
+        turn=true; b0.disabled=b1.disabled=b2.disabled=false;
       },180);
     }
     </script>
-    ''', mon=mon, dmg=dmg)
+    ''', mon=mon)
 
-# Старый /hunt без монстра - перенаправляем в лагерь
+@app.route("/hunt_result/<mid>")
+def hunt_result(mid):
+    if "uid" not in session:
+        return redirect("/")
+    mon = MONSTERS.get(mid, MONSTERS["grib"])
+    total_dmg = request.args.get("dmg", "33")
+    # Начисляем награду
+    try:
+        conn=get_db(); cur=conn.cursor()
+        cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["exp"], session["uid"]))
+        conn.commit(); cur.close(); conn.close()
+    except:
+        pass
+    return render_template_string('''
+    <div style="max-width:420px;margin:0 auto;background:#3d2a14;min-height:100vh;padding:10px;font-family:serif">
+      <div style="background:#e8d5a3;border:4px solid #8b6d4a;border-radius:4px;position:relative;padding-top:25px">
+        <div style="position:absolute;top:-12px;left:0;width:100%;text-align:center"><span style="background:#5a3a1a;color:#ffcc66;padding:2px 15px;border-radius:10px;border:2px solid #000">-Результаты боя-</span></div>
+        <a href="/camp" style="position:absolute;top:5px;right:5px;background:#dcc89c;border:2px solid #000;width:28px;height:28px;text-align:center;text-decoration:none;color:#000;font-weight:bold;border-radius:4px">X</a>
+        
+        <div style="padding:15px">
+          <div style="color:#5a3a1a;font-size:18px">Победители:</div>
+          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px;font-weight:bold;border:1px solid #8b6d4a"><span>Имя</span><span>Урон</span><span>Опыт</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid #8b6d4a"><span style="font-weight:bold;font-size:18px">Gggg</span><span>{{total_dmg}}</span><span>{{mon.exp}}</span></div>
+          
+          <div style="color:#5a3a1a;font-size:18px;margin-top:15px">Побежденные:</div>
+          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px;font-weight:bold;border:1px solid #8b6d4a"><span>Имя</span><span>Урон</span><span>Опыт</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 6px"><span>{{mon.full}}</span><span>0</span><span>0</span></div>
+          
+          <div style="color:green;font-size:18px;margin-top:5px">Трофеи:</div>
+          <div style="padding-left:10px;font-size:18px">{{mon.trophy}}</div>
+          <div style="padding-left:10px;color:darkgreen;font-weight:bold;font-size:18px;margin-top:4px">+💰 {{mon.gold}} 🪙 {{mon.gold}} <span style="font-size:14px">золота</span></div>
+        </div>
+        
+        <div style="height:10px;background:linear-gradient(#8b6d4a,#5a3a1a);border-radius:0 0 3px 3px"></div>
+      </div>
+      
+      <a href="/camp" style="display:block;margin:20px auto;width:80%;background:linear-gradient(#ff8c00,#cc6600);color:#000;text-align:center;padding:12px;font-size:22px;font-weight:bold;border:3px outset #8b6d4a;border-radius:6px;text-decoration:none;box-shadow:2px 2px #000">Далее</a>
+    </div>
+    ''', mon=mon, total_dmg=total_dmg)
+
 @app.route("/hunt")
 def hunt_list():
     return redirect("/camp")
+
 @app.route("/hunt_win")
 def hunt_win():
-    if "uid" not in session: return "no"
-    conn=get_db(); cur=conn.cursor()
-    cur.execute("UPDATE players SET money=money+5 WHERE id=%s",(session["uid"],))
-    conn.commit(); cur.close(); conn.close()
-    return "ok"
-
+    return redirect("/camp")
 @app.route("/logout")
 def logout():
     session.clear()
