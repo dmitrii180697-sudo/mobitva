@@ -387,6 +387,23 @@ def hunt(mid):
     }
     </script>
     ''', mon=mon, player_name=player_name)
+@app.route("/hunt")
+def hunt():
+    if "uid" not in session:
+        return redirect("/")
+    player_name = get_name(session["uid"])
+    return render_template_string("""
+    <div style="padding:15px;color:#fff;background:#2a2a2a;min-height:100vh">
+    <h2>OhoTa</h2>
+    {% for mid, m in MONSTERS.items() %}
+    <div style="border:1px solid #555;padding:10px;margin:10px 0">
+    <b>{{m.name}}</b> - HP {{m.hp}}<br>
+    <a href="/hunt_result/{{mid}}?dmg={{m.hp}}" style="color:#6bc4a2">Atakovat</a>
+    </div>
+    {% endfor %}
+    <br><a href="/camp" style="color:#6bc4a2">V lager</a>
+    </div>
+    """, MONSTERS=MONSTERS, player_name=player_name)
 
 @app.route("/hunt_result/<mid>")
 def hunt_result(mid):
