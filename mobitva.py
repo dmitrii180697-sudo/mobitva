@@ -335,19 +335,8 @@ function hit(){{
 ''')
 
 @app.route("/hunt")
-def hunt():
-    if "uid" not in session: return redirect("/")
-    conn=get_db(); cur=conn.cursor()
-    cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],))
-    p=cur.fetchone()
-    cur.close(); conn.close()
-    if not p: return redirect("/")
-    try:
-        dmg = int(p[11] or 5) + int(p[12] or 0)*2
-    except:
-        dmg = 10
-    
-    return render_template_string('''
+
+        return render_template_string('''
 <div style="display:flex;justify-content:space-between;align-items:flex-end;height:45vh;background:linear-gradient(#7dd8ff,#2e8b57);padding:10px;position:relative">
 <img id="hero" src="/static/hero_m.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s">
 <div style="position:relative"><img id="enemy" src="/static/grib.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s"><div id="dmg2" style="position:absolute;left:20%;top:20%;color:yellow;font-weight:bold;font-size:22px;display:none">-{{dmg}}</div></div>
