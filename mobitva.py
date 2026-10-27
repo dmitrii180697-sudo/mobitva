@@ -332,26 +332,44 @@ def hunt(mid):
     if mid not in MONSTERS:
         return redirect("/camp")
     mon = MONSTERS[mid]
+    
+    # Берем имя игрока из базы
+    player_name = "Ты"
+    try:
+        conn=get_db(); cur=conn.cursor()
+        cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],))
+        row=cur.fetchone()
+        if row and row[0]:
+            player_name = row[0]
+        cur.close(); conn.close()
+    except:
+        pass
+
     return render_template_string('''
     <div style="max-width:420px;margin:0 auto;background:#dcc89c;min-height:100vh;font-family:serif;border:4px solid #3d2a14">
-      <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:6px;font-size:12px"><span>Лагерь</span><span>Бой с {{mon.full}}</span><a href="/camp" style="color:#ffcc66;text-decoration:none">Сбежать</a></div>
-      <div style="position:relative;height:240px;background:linear-gradient(#4a7c2e,#2a4a1a);border-bottom:4px solid #3d2a14;overflow:hidden">
-        <div style="display:flex;justify-content:space-between;padding:6px;background:rgba(0,0,0,0.5);color:#fff;font-weight:bold"><span>Ты <span id="php">100</span>❤</span><span>{{mon.name}} <span id="ehp">{{mon.hp}}</span>❤</span></div>
+      <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:8px;font-size:13px"><span>Лагерь</span><span>Бой с {{mon.full}}</span><a href="/camp" style="color:#ffcc66;text-decoration:none">Сбежать</a></div>
+      
+      <div style="position:relative;height:260px;background:linear-gradient(#4a7c2e,#2a4a1a);border-bottom:4px solid #3d2a14;overflow:hidden">
+        <!-- Вот тут теперь имя персонажа -->
+        <div style="display:flex;justify-content:space-between;padding:6px;background:rgba(0,0,0,0.6);color:#fff;font-weight:bold;font-size:14px">
+          <span>{{player_name}} <span id="php">90</span>❤</span>
+          <span>{{mon.name}} <span id="ehp">{{mon.hp}}</span>❤</span>
+        </div>
         <div style="position:absolute;bottom:0;width:100%;height:50px;background:#5a3a1a"></div>
-        <div id="hero" style="position:absolute;left:10px;bottom:15px;transition:0.2s"><img src="/static/hero_f.png" style="width:100px"></div>
-        <div id="enemy" style="position:absolute;right:20px;bottom:20px;transition:0.3s"><img src="/static/{{mon.img}}" style="width:95px"></div>
-        <div id="my_dmg" style="position:absolute;left:25%;top:60px;color:#ff0;font-size:36px;font-weight:bold;display:none;z-index:10">-10</div>
-        <div id="en_dmg" style="position:absolute;right:25%;top:60px;color:#f55;font-size:36px;font-weight:bold;display:none;z-index:10">-{{mon.dmg}}</div>
-        <div id="log" style="position:absolute;bottom:2px;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.7);color:#0f0;font-size:12px;padding:4px">Твой ход!</div>
+        <div id="hero" style="position:absolute;left:10px;bottom:15px;transition:0.2s"><img src="/static/hero_f.png" style="width:100px;background:#fff"></div>
+        <div id="enemy" style="position:absolute;right:15px;bottom:15px;transition:0.3s"><img src="/static/{{mon.img}}" style="width:95px;background:#fff"></div>
+        <div id="my_dmg" style="position:absolute;left:25%;top:70px;color:#ff0;font-size:36px;font-weight:bold;display:none;z-index:10">-10</div>
+        <div id="en_dmg" style="position:absolute;right:25%;top:70px;color:#f55;font-size:36px;font-weight:bold;display:none;z-index:10">-{{mon.dmg}}</div>
+        <div id="log" style="position:absolute;bottom:0;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.8);color:#0f0;font-size:13px;padding:6px">Твой ход!</div>
       </div>
-      <div style="background:#b89a6a;padding:8px"><div style="display:flex;justify-content:space-around">
-          <button id="b0" onclick="hit()" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">⚔️<br><small>ГОЛОВА</small></button>
-          <button id="b1" onclick="hit()" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">🗡️<br><small>ТЕЛО</small></button>
-          <button id="b2" onclick="hit()" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px">⚔️<br><small>НОГИ</small></button>
+      <div style="background:#b89a6a;padding:12px"><div style="display:flex;justify-content:space-around;gap:8px">
+          <button id="b0" onclick="hit()" style="flex:1;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-weight:bold">⚔️<br><small>ГОЛОВА</small></button>
+          <button id="b1" onclick="hit()" style="flex:1;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-weight:bold">🗡️<br><small>ТЕЛО</small></button>
+          <button id="b2" onclick="hit()" style="flex:1;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-weight:bold">⚔️<br><small>НОГИ</small></button>
       </div></div>
     </div>
     <script>
-    let ehp={{mon.hp}}, php=100, pdmg=10, edmg={{mon.dmg}}, total=0, turn=true;
+    let ehp={{mon.hp}}, php=90, pdmg=10, edmg={{mon.dmg}}, total=0, turn=true;
     function hit(){
       if(!turn) return; turn=false; b0.disabled=b1.disabled=b2.disabled=true;
       let h=document.getElementById('hero'); h.style.transform='translateX(90px)'; setTimeout(()=>h.style.transform='',180);
@@ -374,7 +392,7 @@ def hunt(mid):
       },180);
     }
     </script>
-    ''', mon=mon)
+    ''', mon=mon, player_name=player_name)
 
 @app.route("/hunt_result/<mid>")
 def hunt_result(mid):
@@ -384,7 +402,7 @@ def hunt_result(mid):
     total_dmg = request.args.get("dmg", "33")
     
     # Берем ник игрока из базы
-    player_name = "Герой"
+    player_name = "Ты"
     try:
         conn=get_db(); cur=conn.cursor()
         cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],))
