@@ -310,7 +310,7 @@ def hunt():
     p=cur.fetchone()
     cur.close(); conn.close()
     if not p: return redirect("/")
-    dmg = p[11] + p[12]*2
+    dmg = 10
     return render_template_string('''
 <div style="display:flex;justify-content:space-between;align-items:flex-end;height:45vh;background:linear-gradient(#7dd8ff,#2e8b57);padding:10px;position:relative">
 <img id="hero" src="/static/hero_m.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s">
