@@ -397,7 +397,7 @@ def hunt_result(mid):
     total_dmg = request.args.get("dmg", "33")
     
     # Берем ник игрока из базы
-   player_name = get_name(session["uid"])
+    player_name = get_name(session["uid"])
     try:
         conn=get_db(); cur=conn.cursor()
         cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],))
