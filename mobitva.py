@@ -382,40 +382,57 @@ def hunt_result(mid):
         return redirect("/")
     mon = MONSTERS.get(mid, MONSTERS["grib"])
     total_dmg = request.args.get("dmg", "33")
-    # Начисляем награду
+    
+    # Берем ник игрока из базы
+    player_name = "Герой"
     try:
         conn=get_db(); cur=conn.cursor()
+        cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],))
+        row=cur.fetchone()
+        if row:
+            player_name = row[0]
         cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["exp"], session["uid"]))
         conn.commit(); cur.close(); conn.close()
     except:
         pass
+
     return render_template_string('''
     <div style="max-width:420px;margin:0 auto;background:#3d2a14;min-height:100vh;padding:10px;font-family:serif">
-      <div style="background:#e8d5a3;border:4px solid #8b6d4a;border-radius:4px;position:relative;padding-top:25px">
-        <div style="position:absolute;top:-12px;left:0;width:100%;text-align:center"><span style="background:#5a3a1a;color:#ffcc66;padding:2px 15px;border-radius:10px;border:2px solid #000">-Результаты боя-</span></div>
-        <a href="/camp" style="position:absolute;top:5px;right:5px;background:#dcc89c;border:2px solid #000;width:28px;height:28px;text-align:center;text-decoration:none;color:#000;font-weight:bold;border-radius:4px">X</a>
+      <div style="background:#e8d5a3;border:4px solid #8b6d4a;border-radius:4px;position:relative;padding-top:30px">
+        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#5a3a1a;color:#ffcc66;padding:2px 20px;border-radius:15px;border:2px solid #000;white-space:nowrap">-Результаты боя-</div>
+        <a href="/camp" style="position:absolute;top:8px;right:8px;background:#dcc89c;border:2px solid #5a3a1a;width:28px;height:28px;text-align:center;text-decoration:none;color:#000;font-weight:bold;border-radius:4px;line-height:24px">X</a>
         
-        <div style="padding:15px">
-          <div style="color:#5a3a1a;font-size:18px">Победители:</div>
-          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px;font-weight:bold;border:1px solid #8b6d4a"><span>Имя</span><span>Урон</span><span>Опыт</span></div>
-          <div style="display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid #8b6d4a"><span style="font-weight:bold;font-size:18px">Gggg</span><span>{{total_dmg}}</span><span>{{mon.exp}}</span></div>
+        <div style="padding:15px 15px 5px 15px">
+          <div style="color:#6b4c2a;font-size:18px">Победители:</div>
+          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px 8px;font-weight:bold;font-size:15px;border:1px solid #8b6d4a">
+            <span>Имя</span><span>Урон</span><span>Опыт</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:10px 8px;border-bottom:1px solid #a88a5a">
+            <span style="font-weight:bold;font-size:18px">{{player_name}}</span>
+            <span style="margin-left:auto;margin-right:40px">{{total_dmg}}</span>
+            <span>{{mon.exp}}</span>
+          </div>
           
-          <div style="color:#5a3a1a;font-size:18px;margin-top:15px">Побежденные:</div>
-          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px;font-weight:bold;border:1px solid #8b6d4a"><span>Имя</span><span>Урон</span><span>Опыт</span></div>
-          <div style="display:flex;justify-content:space-between;padding:8px 6px"><span>{{mon.full}}</span><span>0</span><span>0</span></div>
+          <div style="color:#6b4c2a;font-size:18px;margin-top:18px">Побежденные:</div>
+          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px 8px;font-weight:bold;font-size:15px;border:1px solid #8b6d4a">
+            <span>Имя</span><span>Урон</span><span>Опыт</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px">
+            <span>{{mon.full}}</span><span style="margin-left:auto;margin-right:40px">0</span><span>0</span>
+          </div>
           
-          <div style="color:green;font-size:18px;margin-top:5px">Трофеи:</div>
-          <div style="padding-left:10px;font-size:18px">{{mon.trophy}}</div>
-          <div style="padding-left:10px;color:darkgreen;font-weight:bold;font-size:18px;margin-top:4px">+💰 {{mon.gold}} 🪙 {{mon.gold}} <span style="font-size:14px">золота</span></div>
+          <div style="color:green;font-size:18px;margin-top:12px">Трофеи:</div>
+          <div style="padding:5px 10px;color:#0a5a0a;font-weight:bold;font-size:18px">
+            + 🪙 {{mon.gold}} золота
+          </div>
         </div>
         
-        <div style="height:10px;background:linear-gradient(#8b6d4a,#5a3a1a);border-radius:0 0 3px 3px"></div>
+        <div style="height:12px;background:linear-gradient(#8b6d4a,#5a3a1a);border-radius:0 0 3px 3px;margin-top:10px"></div>
       </div>
       
-      <a href="/camp" style="display:block;margin:20px auto;width:80%;background:linear-gradient(#ff8c00,#cc6600);color:#000;text-align:center;padding:12px;font-size:22px;font-weight:bold;border:3px outset #8b6d4a;border-radius:6px;text-decoration:none;box-shadow:2px 2px #000">Далее</a>
+      <a href="/camp" style="display:block;margin:25px auto;width:80%;background:linear-gradient(#ff8c00,#cc6600);color:#000;text-align:center;padding:14px;font-size:22px;font-weight:bold;border:3px outset #8b6d4a;border-radius:6px;text-decoration:none">Далее</a>
     </div>
-    ''', mon=mon, total_dmg=total_dmg)
-
+    ''', mon=mon, total_dmg=total_dmg, player_name=player_name)
 @app.route("/hunt")
 def hunt_list():
     return redirect("/camp")
