@@ -334,32 +334,6 @@ function hit(){{
 </script>
 ''')
 
-@app.route("/hunt")
-
-        return render_template_string('''
-<div style="display:flex;justify-content:space-between;align-items:flex-end;height:45vh;background:linear-gradient(#7dd8ff,#2e8b57);padding:10px;position:relative">
-<img id="hero" src="/static/hero_m.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s">
-<div style="position:relative"><img id="enemy" src="/static/grib.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s"><div id="dmg2" style="position:absolute;left:20%;top:20%;color:yellow;font-weight:bold;font-size:22px;display:none">-{{dmg}}</div></div>
-</div>
-<div style="margin-top:6px;background:#333;height:12px;border:1px solid #000"><div id="ehpbar" style="height:100%;width:100%;background:red"></div></div>
-<div id="log" style="background:#000;color:#0f0;text-align:center;padding:6px">Grib - 30 HP | Uron {{dmg}}</div>
-<button id="hitbtn" onclick="hit()" style="width:100%;margin-top:8px;height:85px;background:#8b0000;color:white;font-size:20px;border-radius:8px">X UDAR</button>
-<a href="/game" style="display:block;text-align:center;margin-top:8px">Nazad</a>
-<script>
-let ehp=30,maxehp=30,pdmg={{dmg}};
-function hit(){
- if(ehp<=0) return;
- let h=document.getElementById('hero'); h.style.transform='translateX(35px)'; setTimeout(()=>h.style.transform='',150);
- ehp-=pdmg; if(ehp<0) ehp=0;
- document.getElementById('ehpbar').style.width=(ehp/maxehp*100)+'%';
- let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
- let e=document.getElementById('enemy'); e.style.transform='translateX(-25px)'; setTimeout(()=>e.style.transform='',150);
- if(ehp<=0){document.getElementById('log').innerHTML='Pobedili! +5g'; document.getElementById('hitbtn').disabled=true; fetch('/hunt_win').then(()=>setTimeout(()=>location.href='/game',1000));}
-}
-
-</script>
-''', dmg=dmg)
-
 @app.route("/hunt_win")
 def hunt_win():
     if "uid" not in session: return "no"
