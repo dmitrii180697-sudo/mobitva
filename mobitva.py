@@ -325,22 +325,11 @@ def camp():
     </div>
     ''', m=m)
 
-
 def get_name(uid):
-    try:
-        conn=get_db(); cur=conn.cursor()
-        for col in ["username", "login", "name", "nick"]:
-            try:
-                cur.execute(f"SELECT {col} FROM players WHERE id=%s", (uid,))
-                r=cur.fetchone()
-                if r and r[0]:
-                    cur.close(); conn.close()
-                    return r[0]
-            except:
-                continue
-        cur.close(); conn.close()
-    except:
-        pass
+    # Берем логин прямо из сессии - это твой логин при регистрации
+    login = session.get("login") or session.get("username") or session.get("user")
+    if login:
+        return login
     return "Герой"
 @app.route("/hunt/<mid>")
 def hunt(mid):
