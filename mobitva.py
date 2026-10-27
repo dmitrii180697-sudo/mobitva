@@ -311,7 +311,7 @@ def hunt():
     cur.close(); conn.close()
     if not p: return redirect("/")
     dmg = p[11] + p[12]*2
-    return render_template_string(f'''
+    return render_template_string('''
 <div style="display:flex;justify-content:space-between;align-items:flex-end;height:45vh;background:linear-gradient(#7dd8ff,#2e8b57);padding:10px;position:relative">
 <img id="hero" src="/static/hero_m.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s">
 <div style="position:relative"><img id="enemy" src="/static/grib.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s"><div id="dmg2" style="position:absolute;left:20%;top:20%;color:yellow;font-weight:bold;font-size:22px;display:none">-{dmg}</div></div>
@@ -321,7 +321,7 @@ def hunt():
 <button id="hitbtn" onclick="hit()" style="width:100%;margin-top:8px;height:85px;background:#8b0000;color:white;font-size:20px;border-radius:8px">X УДАР</button>
 <a href="/game" style="display:block;text-align:center;margin-top:8px">Назад</a>
 <script>
-let ehp=30,maxehp=30,pdmg={dmg};
+let ehp=30,maxehp=30,pdmg=pdmg;
 function hit(){
  if(ehp<=0) return;
  let h=document.getElementById('hero'); h.style.transform='translateX(35px)'; setTimeout(()=>h.style.transform='',150);
@@ -329,7 +329,7 @@ function hit(){
  document.getElementById('ehpbar').style.width=(ehp/maxehp*100)+'%';
  let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
  let e=document.getElementById('enemy'); e.style.transform='translateX(-25px)'; setTimeout(()=>e.style.transform='',150);
- if(ehp<=0){{document.getElementById('log').innerHTML='Pobedili! +5g'; document.getElementById('hitbtn').disabled=true; fetch('/hunt_win').then(()=>setTimeout(()=>location.href='/game',1000));}}
+ if(ehp<=0){document.getElementById('log').innerHTML='Pobedili! +5g'; document.getElementById('hitbtn').disabled=true; fetch('/hunt_win').then(()=>setTimeout(()=>location.href='/game',1000));}}
 }
 </script>
 ''', dmg=dmg)
