@@ -403,7 +403,7 @@ def hunt_result(mid):
         row=cur.fetchone()
         if row:
             player_name = row[0]
-        cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["exp"], session["uid"]))
+cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s, yellow=yellow+%s, white=white+%s, blue=blue+%s WHERE id=%s", (mon["gold"], mon["exp"], mon["gold"], 5, 1, session["uid"],))
         conn.commit(); cur.close(); conn.close()
     except:
         pass
