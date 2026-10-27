@@ -334,7 +334,7 @@ def hunt(mid):
     mon = MONSTERS[mid]
     
     # Берем имя игрока из базы
-    player_name = "Ты"
+    player_name = "Имя созданное при регистрации"
     try:
         conn=get_db(); cur=conn.cursor()
         cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],))
