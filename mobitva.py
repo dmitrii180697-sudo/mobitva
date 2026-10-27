@@ -395,8 +395,8 @@ def hunt_result(mid):
     mon = MONSTERS.get(mid, MONSTERS["grib"])
     total_dmg = request.args.get("dmg", "33")
     player_name = get_name(session["uid"])
-    conn=get_db(); cur=conn.cursor(); cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["gold"], mon["exp"], session["uid"],)); conn.commit(); cur.close(); conn.close()
-    return render_template_string('''
+        try: conn=get_db(); cur=conn.cursor(); cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["exp"], session["uid"],)); conn.commit(); cur.close(); conn.close()
+        except: pass
         <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#5a3a1a;color:#ffcc66;padding:2px 20px;border-radius:15px;border:2px solid #000;white-space:nowrap">-Результаты боя-</div>
         <a href="/camp" style="position:absolute;top:8px;right:8px;background:#dcc89c;border:2px solid #5a3a1a;width:28px;height:28px;text-align:center;text-decoration:none;color:#000;font-weight:bold;border-radius:4px;line-height:24px">X</a>
         
