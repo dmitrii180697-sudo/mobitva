@@ -399,44 +399,14 @@ def hunt_result(mid):
         conn=get_db(); cur=conn.cursor(); cur.execute("UPDATE players SET gold=gold+%s WHERE id=%s", (mon["gold"], session["uid"],)); cur.execute("UPDATE players SET exp=exp+%s WHERE id=%s", (mon["exp"], session["uid"],)); conn.commit(); cur.close(); conn.close()
     except:
         pass
-        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#5a3a1a;color:#ffcc66;padding:2px 20px;border-radius:15px;border:2px solid #000;white-space:nowrap">-Результаты боя-</div>
-        <a href="/camp" style="position:absolute;top:8px;right:8px;background:#dcc89c;border:2px solid #5a3a1a;width:28px;height:28px;text-align:center;text-decoration:none;color:#000;font-weight:bold;border-radius:4px;line-height:24px">X</a>
-        
-        <div style="padding:15px 15px 5px 15px">
-          <div style="color:#6b4c2a;font-size:18px">Победители:</div>
-          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px 8px;font-weight:bold;font-size:15px;border:1px solid #8b6d4a">
-            <span>Имя</span><span>Урон</span><span>Опыт</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:10px 8px;border-bottom:1px solid #a88a5a">
-            <span style="font-weight:bold;font-size:18px">{{player_name}}</span>
-            <span style="margin-left:auto;margin-right:40px">{{total_dmg}}</span>
-            <span>{{mon.exp}}</span>
-          </div>
-          
-          <div style="color:#6b4c2a;font-size:18px;margin-top:18px">Побежденные:</div>
-          <div style="background:#c9a86a;display:flex;justify-content:space-between;padding:6px 8px;font-weight:bold;font-size:15px;border:1px solid #8b6d4a">
-            <span>Имя</span><span>Урон</span><span>Опыт</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px">
-            <span>{{mon.full}}</span><span style="margin-left:auto;margin-right:40px">0</span><span>0</span>
-          </div>
-          
-          <div style="color:green;font-size:18px;margin-top:12px">Трофеи:</div>
-          <div style="padding:5px 10px;color:#0a5a0a;font-weight:bold;font-size:18px">
-            + 🪙 {{mon.gold}} золота
-          </div>
-        </div>
-        
-        <div style="height:12px;background:linear-gradient(#8b6d4a,#5a3a1a);border-radius:0 0 3px 3px;margin-top:10px"></div>
-      </div>
-      
-      <a href="/camp" style="display:block;margin:25px auto;width:80%;background:linear-gradient(#ff8c00,#cc6600);color:#000;text-align:center;padding:14px;font-size:22px;font-weight:bold;border:3px outset #8b6d4a;border-radius:6px;text-decoration:none">Далее</a>
+    return render_template_string("""
+    <div style="padding:15px;color:#fff;background:#2a2a2a;min-height:100vh">
+    <h2>Pobeda! Ty ubil {{mon.name}}</h2>
+    <p>+{{mon.gold}} gold +{{mon.exp}} exp</p>
+    <p>Uron: {{total_dmg}}</p>
+    <a href="/camp" style="color:#6bc4a2">V lager</a> | <a href="/hunt" style="color:#6bc4a2">Ohotitsya snova</a>
     </div>
-    ''', mon=mon, total_dmg=total_dmg, player_name=player_name)
-@app.route("/hunt")
-def hunt_list():
-    return redirect("/camp")
-
+    """, mon=mon, player_name=player_name)
 @app.route("/hunt_win")
 def hunt_win():
     if "uid" not in session:
