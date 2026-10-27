@@ -304,35 +304,74 @@ def quest_done():
     cur.close(); conn.close(); return redirect(f"/game?m={m}")
 @app.route("/hunt")
 def hunt():
-    if "uid" not in session: return redirect("/")
-    conn=get_db(); cur=conn.cursor()
-    cur.execute("SELECT * FROM players WHERE id=%s",(session["uid"],))
-    p=cur.fetchone()
-    cur.close(); conn.close()
-    if not p: return redirect("/")
+    if "uid" not in session:
+        return redirect("/")
     dmg = 10
     return render_template_string('''
-<div style="display:flex;justify-content:space-between;align-items:flex-end;height:45vh;background:linear-gradient(#7dd8ff,#2e8b57);padding:10px;position:relative">
-<img id="hero" src="/static/hero_m.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s">
-<div style="position:relative"><img id="enemy" src="/static/grib.png" style="width:130px;height:130px;object-fit:contain;transition:0.15s"><div id="dmg2" style="position:absolute;left:20%;top:20%;color:yellow;font-weight:bold;font-size:22px;display:none">-{dmg}</div></div>
-</div>
-<div style="margin-top:6px;background:#333;height:12px;border:1px solid #000"><div id="ehpbar" style="height:100%;width:100%;background:red"></div></div>
-<div id="log" style="background:#000;color:#0f0;text-align:center;padding:6px">Гриб - 30 HP | Урон {dmg}</div>
-<button id="hitbtn" onclick="hit()" style="width:100%;margin-top:8px;height:85px;background:#8b0000;color:white;font-size:20px;border-radius:8px">X УДАР</button>
-<a href="/game" style="display:block;text-align:center;margin-top:8px">Назад</a>
-<script>
-let ehp=30,maxehp=30,pdmg=pdmg;
-function hit(){
- if(ehp<=0) return;
- let h=document.getElementById('hero'); h.style.transform='translateX(35px)'; setTimeout(()=>h.style.transform='',150);
- ehp-=pdmg; if(ehp<0) ehp=0;
- document.getElementById('ehpbar').style.width=(ehp/maxehp*100)+'%';
- let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
- let e=document.getElementById('enemy'); e.style.transform='translateX(-25px)'; setTimeout(()=>e.style.transform='',150);
- if(ehp<=0){document.getElementById('log').innerHTML='Pobedili! +5g'; document.getElementById('hitbtn').disabled=true; fetch('/hunt_win').then(()=>setTimeout(()=>location.href='/game',1000));}}
-}
-</script>
-''', dmg=dmg)
+    <div style="max-width:420px;margin:0 auto;background:#dcc89c;min-height:100vh;font-family:serif;border:4px solid #3d2a14">
+      <!-- Шапка Лагерь как у тебя -->
+      <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:6px;font-size:12px">
+        <span>Меню</span><span>Лагерь - Охота</span><span><a href="/game" style="color:#ffcc66;text-decoration:none">Выход</a></span>
+      </div>
+
+      <!-- Фон Лагеря - лес/костер -->
+      <div style="position:relative;height:220px;background:linear-gradient(#4a7c2e,#2a4a1a);border-bottom:4px solid #3d2a14;overflow:hidden">
+        <div style="position:absolute;bottom:0;width:100%;height:60px;background:#5a3a1a"></div>
+        <div style="position:absolute;top:8px;left:10px;color:#fff;font-weight:bold;text-shadow:1px 1px #000">🧙 10❤ | {{dmg}}⚔</div>
+        <div style="position:absolute;top:8px;right:10px;color:#fff;font-weight:bold;text-shadow:1px 1px #000">🍄 Гриб <span id="ehp">30</span>❤</div>
+        
+        <!-- Твои персонажи из прошлого боя -->
+        <div id="hero" style="position:absolute;left:20px;bottom:20px;font-size:80px;transition:0.2s;z-index:2">🧙‍♂️</div>
+        <div id="enemy" style="position:absolute;right:30px;bottom:25px;font-size:80px;transition:0.3s;z-index:2">🍄</div>
+        
+        <div id="dmg_float" style="position:absolute;left:55%;top:60px;color:#ff0000;font-size:36px;font-weight:bold;display:none;text-shadow:2px 2px #fff;z-index:10">-{{dmg}}</div>
+        <div id="log" style="position:absolute;bottom:2px;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.6);color:#0f0;font-size:12px;padding:2px">Гриб 30 HP | Выбери удар</div>
+      </div>
+
+      <!-- 3 меча как в mobitva2 -->
+      <div style="background:#b89a6a;padding:8px;border-bottom:2px solid #3d2a14">
+        <div style="display:flex;justify-content:space-around">
+          <button onclick="hit(0)" style="width:90px;height:55px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:28px">⚔️<br><small style="font-size:10px">ГОЛОВА</small></button>
+          <button onclick="hit(1)" style="width:90px;height:55px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:28px">🗡️<br><small style="font-size:10px">ТЕЛО</small></button>
+          <button onclick="hit(2)" style="width:90px;height:55px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:28px">⚔️<br><small style="font-size:10px">НОГИ</small></button>
+        </div>
+      </div>
+
+      <!-- Зелья снизу -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#3d2a14;padding:4px">
+        <div style="background:#e8d5a3;text-align:center;padding:6px;border:1px solid #000">🍄<br><small>5</small></div>
+        <div style="background:#e8d5a3;text-align:center;padding:6px;border:1px solid #000">🧪<br><small>5</small></div>
+        <div style="background:#e8d5a3;text-align:center;padding:6px;border:1px solid #000">🗡️<br><small>1</small></div>
+        <div style="background:#e8d5a3;text-align:center;padding:6px;border:1px solid #000">🛡️<br><small>1</small></div>
+      </div>
+    </div>
+
+    <script>
+    let ehp=30, pdmg={{dmg}};
+    function hit(type){
+      if(ehp<=0) return;
+      let h=document.getElementById('hero');
+      h.style.transform='translateX(90px)';
+      setTimeout(()=>h.style.transform='translateX(0)',180);
+      setTimeout(()=>{
+        ehp-=pdmg; if(ehp<0) ehp=0;
+        document.getElementById('ehp').innerText=ehp;
+        let d=document.getElementById('dmg_float'); d.innerText='-'+pdmg; d.style.display='block';
+        d.style.transform='translateY(-40px)'; setTimeout(()=>{d.style.display='none'; d.style.transform='';},600);
+        let e=document.getElementById('enemy');
+        e.style.transform='translateX(30px) scale(0.8) rotate(15deg)';
+        e.style.filter='brightness(0.5)';
+        setTimeout(()=>{e.style.transform=''; e.style.filter='';},300);
+        document.getElementById('log').innerText='Ударил в '+(type==0?'голову':type==1?'тело':'ноги')+'! -'+pdmg+' | Гриб: '+ehp+' HP';
+        if(ehp<=0){
+          document.getElementById('enemy').innerHTML='💀';
+          document.getElementById('log').innerText='Победа! Гриб повержен +5 золота';
+          setTimeout(()=>{ fetch('/hunt_win').then(()=>location.href='/game'); },1200);
+        }
+      },180);
+    }
+    </script>
+    ''', dmg=dmg)
 
 @app.route("/hunt_win")
 def hunt_win():
