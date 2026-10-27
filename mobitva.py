@@ -395,10 +395,8 @@ def hunt_result(mid):
     mon = MONSTERS.get(mid, MONSTERS["grib"])
     total_dmg = request.args.get("dmg", "33")
     
-    # Берем ник игрока из базы
-    player_name = get_name(session["uid"])
-        try: conn=get_db(); cur=conn.cursor(); cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],)); row=cur.fetchone(); player_name=row[0] if row else player_name; cur.execute("UPDATE players SET gold=gold+%s WHERE id=%s", (mon["gold"], session["uid"],)); cur.execute("UPDATE players SET yellow=yellow+%s WHERE id=%s", (mon["gold"], session["uid"],)); cur.execute("UPDATE players SET exp=exp+%s WHERE id=%s", (mon["exp"], session["uid"],)); conn.commit(); cur.close(); conn.close()
-    except: pass
+        player_name = get_name(session["uid"])
+    conn=get_db(); cur=conn.cursor(); cur.execute("UPDATE players SET gold=gold+%s, yellow=yellow+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["gold"], mon["exp"], session["uid"],)); conn.commit(); cur.close(); conn.close()
            return render_template_string('''
     <div style="max-width:420px;margin:0 auto;background:#3d2a14;min-height:100vh;padding:10px;font-family:serif">
       <div style="background:#e8d5a3;border:4px solid #8b6d4a;border-radius:4px;position:relative;padding-top:30px">
