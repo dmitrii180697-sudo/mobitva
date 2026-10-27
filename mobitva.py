@@ -322,7 +322,7 @@ def hunt():
 <a href="/game" style="display:block;text-align:center;margin-top:8px">Назад</a>
 <script>
 let ehp=30,maxehp=30,pdmg={dmg};
-function hit(){{
+function hit(){
  if(ehp<=0) return;
  let h=document.getElementById('hero'); h.style.transform='translateX(35px)'; setTimeout(()=>h.style.transform='',150);
  ehp-=pdmg; if(ehp<0) ehp=0;
@@ -330,9 +330,9 @@ function hit(){{
  let d=document.getElementById('dmg2'); d.style.display='block'; setTimeout(()=>d.style.display='none',400);
  let e=document.getElementById('enemy'); e.style.transform='translateX(-25px)'; setTimeout(()=>e.style.transform='',150);
  if(ehp<=0){{document.getElementById('log').innerHTML='Pobedili! +5g'; document.getElementById('hitbtn').disabled=true; fetch('/hunt_win').then(()=>setTimeout(()=>location.href='/game',1000));}}
-}}
+}
 </script>
-''')
+''', dmg=dmg)
 
 @app.route("/hunt_win")
 def hunt_win():
