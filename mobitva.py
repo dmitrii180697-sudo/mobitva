@@ -398,12 +398,16 @@ def hunt_result(mid):
     # Берем ник игрока из базы
     player_name = get_name(session["uid"])
     try:
-        conn=get_db(); cur=conn.cursor()
+                conn=get_db(); cur=conn.cursor()
         cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],))
         row=cur.fetchone()
         if row:
             player_name = row[0]
-    cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s, yellow=yellow+%s, white=white+%s, blue=blue+%s WHERE id=%s", (mon["gold"], mon["exp"], mon["gold"], 5, 1, session["uid"],))
+        cur.execute("UPDATE players SET gold=gold+%s WHERE id=%s", (mon["gold"], session["uid"],))
+        cur.execute("UPDATE players SET yellow=yellow+%s WHERE id=%s", (mon["gold"], session["uid"],))
+        cur.execute("UPDATE players SET exp=exp+%s WHERE id=%s", (mon["exp"], session["uid"],))
+        conn.commit(); cur.close(); conn.close()
+    except:
         pass
 
     return render_template_string('''
