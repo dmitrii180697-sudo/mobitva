@@ -333,17 +333,25 @@ def hunt(mid):
         return redirect("/camp")
     mon = MONSTERS[mid]
     
-    # Берем имя игрока из базы
-    player_name = "Dmitrii"
-    try:
-        conn=get_db(); cur=conn.cursor()
-        cur.execute("SELECT username FROM players WHERE id=%s", (session["uid"],))
-        row=cur.fetchone()
-        if row and row[0]:
-            player_name = row[0]
-        cur.close(); conn.close()
-    except:
-        pass
+       # Берем имя игрока из базы - для любого игрока
+    def get_name(uid):
+        try:
+            conn=get_db(); cur=conn.cursor()
+            for col in ["username", "login", "name", "nick"]:
+                try:
+                    cur.execute(f"SELECT {col} FROM players WHERE id=%s", (uid,))
+                    r=cur.fetchone()
+                    if r and r[0]:
+                        cur.close(); conn.close()
+                        return r[0]
+                except:
+                    continue
+            cur.close(); conn.close()
+        except:
+            pass
+        return "Герой"
+
+    player_name = get_name(session["uid"])
 
     return render_template_string('''
     <div style="max-width:420px;margin:0 auto;background:#dcc89c;min-height:100vh;font-family:serif;border:4px solid #3d2a14">
