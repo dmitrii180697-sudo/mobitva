@@ -309,35 +309,31 @@ def hunt():
     dmg = 10
     return render_template_string('''
     <div style="max-width:420px;margin:0 auto;background:#dcc89c;min-height:100vh;font-family:serif;border:4px solid #3d2a14">
-      <!-- Шапка Лагерь как у тебя -->
       <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:6px;font-size:12px">
         <span>Меню</span><span>Лагерь - Охота</span><span><a href="/game" style="color:#ffcc66;text-decoration:none">Выход</a></span>
       </div>
 
-      <!-- Фон Лагеря - лес/костер -->
-      <div style="position:relative;height:220px;background:linear-gradient(#4a7c2e,#2a4a1a);border-bottom:4px solid #3d2a14;overflow:hidden">
-        <div style="position:absolute;bottom:0;width:100%;height:60px;background:#5a3a1a"></div>
-        <div style="position:absolute;top:8px;left:10px;color:#fff;font-weight:bold;text-shadow:1px 1px #000">🧙 10❤ | {{dmg}}⚔</div>
-        <div style="position:absolute;top:8px;right:10px;color:#fff;font-weight:bold;text-shadow:1px 1px #000">🍄 Гриб <span id="ehp">30</span>❤</div>
-        
-        <!-- Твои персонажи из прошлого боя -->
+      <div style="position:relative;height:240px;background:linear-gradient(#4a7c2e,#2a4a1a);border-bottom:4px solid #3d2a14;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;padding:6px;background:rgba(0,0,0,0.5);color:#fff;font-weight:bold">
+          <span>🧙 Ты <span id="php">100</span>❤</span>
+          <span>🍄 Гриб <span id="ehp">30</span>❤</span>
+        </div>
+        <div style="position:absolute;bottom:0;width:100%;height:50px;background:#5a3a1a"></div>
         <div id="hero" style="position:absolute;left:20px;bottom:20px;font-size:80px;transition:0.2s;z-index:2">🧙‍♂️</div>
         <div id="enemy" style="position:absolute;right:30px;bottom:25px;font-size:80px;transition:0.3s;z-index:2">🍄</div>
-        
-        <div id="dmg_float" style="position:absolute;left:55%;top:60px;color:#ff0000;font-size:36px;font-weight:bold;display:none;text-shadow:2px 2px #fff;z-index:10">-{{dmg}}</div>
-        <div id="log" style="position:absolute;bottom:2px;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.6);color:#0f0;font-size:12px;padding:2px">Гриб 30 HP | Выбери удар</div>
+        <div id="my_dmg" style="position:absolute;left:20%;top:60px;color:yellow;font-size:36px;font-weight:bold;display:none;z-index:10">-{{dmg}}</div>
+        <div id="en_dmg" style="position:absolute;right:25%;top:60px;color:red;font-size:36px;font-weight:bold;display:none;z-index:10">-5</div>
+        <div id="log" style="position:absolute;bottom:2px;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.7);color:#0f0;font-size:12px;padding:4px">Твой ход! Выбери куда бить</div>
       </div>
 
-      <!-- 3 меча как в mobitva2 -->
-      <div style="background:#b89a6a;padding:8px;border-bottom:2px solid #3d2a14">
+      <div style="background:#b89a6a;padding:8px">
         <div style="display:flex;justify-content:space-around">
-          <button onclick="hit(0)" style="width:90px;height:55px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:28px">⚔️<br><small style="font-size:10px">ГОЛОВА</small></button>
-          <button onclick="hit(1)" style="width:90px;height:55px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:28px">🗡️<br><small style="font-size:10px">ТЕЛО</small></button>
-          <button onclick="hit(2)" style="width:90px;height:55px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:28px">⚔️<br><small style="font-size:10px">НОГИ</small></button>
+          <button id="b0" onclick="hit(0)" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:26px">⚔️<br><small style="font-size:10px">ГОЛОВА</small></button>
+          <button id="b1" onclick="hit(1)" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:26px">🗡️<br><small style="font-size:10px">ТЕЛО</small></button>
+          <button id="b2" onclick="hit(2)" style="width:90px;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-size:26px">⚔️<br><small style="font-size:10px">НОГИ</small></button>
         </div>
       </div>
 
-      <!-- Зелья снизу -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#3d2a14;padding:4px">
         <div style="background:#e8d5a3;text-align:center;padding:6px;border:1px solid #000">🍄<br><small>5</small></div>
         <div style="background:#e8d5a3;text-align:center;padding:6px;border:1px solid #000">🧪<br><small>5</small></div>
@@ -347,27 +343,47 @@ def hunt():
     </div>
 
     <script>
-    let ehp=30, pdmg={{dmg}};
+    let ehp=30, php=100, pdmg={{dmg}}, edmg=5, turn=true;
     function hit(type){
-      if(ehp<=0) return;
-      let h=document.getElementById('hero');
-      h.style.transform='translateX(90px)';
+      if(!turn || ehp<=0 || php<=0) return;
+      turn=false;
+      document.getElementById('b0').disabled=true; document.getElementById('b1').disabled=true; document.getElementById('b2').disabled=true;
+      
+      // Твой удар
+      let h=document.getElementById('hero'); h.style.transform='translateX(90px)';
       setTimeout(()=>h.style.transform='translateX(0)',180);
       setTimeout(()=>{
         ehp-=pdmg; if(ehp<0) ehp=0;
         document.getElementById('ehp').innerText=ehp;
-        let d=document.getElementById('dmg_float'); d.innerText='-'+pdmg; d.style.display='block';
-        d.style.transform='translateY(-40px)'; setTimeout(()=>{d.style.display='none'; d.style.transform='';},600);
-        let e=document.getElementById('enemy');
-        e.style.transform='translateX(30px) scale(0.8) rotate(15deg)';
-        e.style.filter='brightness(0.5)';
-        setTimeout(()=>{e.style.transform=''; e.style.filter='';},300);
-        document.getElementById('log').innerText='Ударил в '+(type==0?'голову':type==1?'тело':'ноги')+'! -'+pdmg+' | Гриб: '+ehp+' HP';
+        let d=document.getElementById('my_dmg'); d.innerText='-'+pdmg; d.style.display='block'; setTimeout(()=>d.style.display='none',700);
+        let e=document.getElementById('enemy'); e.style.transform='translateX(30px) scale(0.8)'; setTimeout(()=>e.style.transform='',300);
+        document.getElementById('log').innerText='Ты ударил! -'+pdmg;
         if(ehp<=0){
           document.getElementById('enemy').innerHTML='💀';
-          document.getElementById('log').innerText='Победа! Гриб повержен +5 золота';
+          document.getElementById('log').innerText='Победа! +5 золота';
           setTimeout(()=>{ fetch('/hunt_win').then(()=>location.href='/game'); },1200);
+          return;
         }
+        // Ответ гриба через 800мс
+        setTimeout(enemyHit,800);
+      },180);
+    }
+    function enemyHit(){
+      let e=document.getElementById('enemy'); e.style.transform='translateX(-70px)';
+      setTimeout(()=>e.style.transform='',180);
+      setTimeout(()=>{
+        php-=edmg; if(php<0) php=0;
+        document.getElementById('php').innerText=php;
+        let d=document.getElementById('en_dmg'); d.innerText='-'+edmg; d.style.display='block'; setTimeout(()=>d.style.display='none',700);
+        let h=document.getElementById('hero'); h.style.transform='translateX(-20px)'; h.style.filter='brightness(0.5)'; setTimeout(()=>{h.style.transform=''; h.style.filter='';},300);
+        document.getElementById('log').innerText='Гриб ударил! -'+edmg+' | Твои HP: '+php;
+        if(php<=0){
+          document.getElementById('log').innerText='Ты проиграл! Беги в лагерь...';
+          setTimeout(()=>location.href='/game',1500); return;
+        }
+        turn=true;
+        document.getElementById('b0').disabled=false; document.getElementById('b1').disabled=false; document.getElementById('b2').disabled=false;
+        document.getElementById('log').innerText='Твой ход!';
       },180);
     }
     </script>
