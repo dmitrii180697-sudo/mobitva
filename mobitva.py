@@ -367,5 +367,23 @@ function hit(){
  let e=document.getElementById('enemy'); e.style.transform='translateX(-25px)'; setTimeout(()=>e.style.transform='',150);
  if(ehp<=0){document.getElementById('log').innerHTML='Pobedili! +5g'; document.getElementById('hitbtn').disabled=true; fetch('/hunt_win').then(()=>setTimeout(()=>location.href='/game',1000));}
 }
+
 </script>
 ''', dmg=dmg)
+
+@app.route("/hunt_win")
+def hunt_win():
+    if "uid" not in session: return "no"
+    conn=get_db(); cur=conn.cursor()
+    cur.execute("UPDATE players SET money=money+5 WHERE id=%s",(session["uid"],))
+    conn.commit(); cur.close(); conn.close()
+    return "ok"
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+if __name__ == "__main__":
+    port=int(os.environ.get("PORT",10000))
+    app.run(host="0.0.0.0",port=port)
