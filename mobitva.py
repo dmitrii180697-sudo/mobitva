@@ -388,7 +388,7 @@ def hunt(mid):
     </script>
     ''', mon=mon, player_name=player_name)
 @app.route("/hunt")
-def hunt():
+def hunt_page():
     if "uid" not in session:
         return redirect("/")
     player_name = get_name(session["uid"])
