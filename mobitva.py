@@ -451,6 +451,40 @@ def hunt_list():
 
 @app.route("/hunt_win")
 def hunt_win():
+    if "uid" not in session:
+        return redirect("/")
+    mid = session.pop("last_mid", None)
+    if not mid or mid not in MONSTERS:
+        return redirect("/camp")
+    
+    mon = MONSTERS[mid]
+    # Сколько давать — берем из монстра
+    gold_add = getattr(mon, 'gold', 10) if hasattr(mon, 'gold') else mon.get('gold', 10) if isinstance(mon, dict) else 10
+    
+    # Если у монстра нет настроек — даем рандом
+    import random
+    try:
+        gold_add = int(gold_add)
+    except:
+        gold_add = random.randint(5, 15)
+    
+    silver_add = random.randint(5, 15)
+    rubin_add = 1 if random.random() < 0.15 else 0
+
+    con = get_db()
+    cur = con.cursor()
+    # У тебя p[4]=золото, p[5]=серебро, p[6]=рубины, p[7]=уровень. Обновляем именно их.
+    # Попробуем по именам колонок — если не сработает, скажи как называются колонки
+    try:
+        cur.execute("UPDATE players SET gold = gold + %s, silver = silver + %s, rubin = rubin + %s WHERE id = %s", (gold_add, silver_add, rubin_add, session["uid"]))
+    except:
+        try:
+            cur.execute("UPDATE players SET yellow = yellow + %s, white = white + %s, blue = blue + %s WHERE id = %s", (gold_add, silver_add, rubin_add, session["uid"]))
+        except:
+            # Фолбек по индексам если колонки называются по-другому
+            cur.execute("UPDATE players SET p4 = p4 + %s, p5 = p5 + %s, p6 = p6 + %s WHERE id = %s", (gold_add, silver_add, rubin_add, session["uid"]))
+    con.commit()
+    con.close()
     return redirect("/camp")
 @app.route("/logout")
 def logout():
