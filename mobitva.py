@@ -330,63 +330,59 @@ def get_name(uid):
     if login:
         return login
     return "Герой"
-@app.route("/hunt/<mid>")
-def hunt(mid):
+@app.route("/hunt")
+def hunt():
     if "uid" not in session:
         return redirect("/")
-    if mid not in MONSTERS:
-        return redirect("/camp")
-    mon = MONSTERS[mid]
     player_name = get_name(session["uid"])
+    return render_template_string("""
+<div style="padding:12px;background:#1e2a1e;min-height:100vh;color:#fff;font-family:sans-serif">
+<h3 style="margin:0 0 10px 0">Локация: Лес 🌲</h3>
+<p>Выбери монстра:</p>
+{% for mid, m in MONSTERS.items() %}
+<div style="background:#2a3a2a;border:1px solid #3d5a3d;border-radius:10px;padding:12px;margin:10px 0;display:flex;justify-content:space-between;align-items:center">
+<div><b>{{m.name}}</b><br><small>HP {{m.hp}} | Gold +{{m.gold}}</small></div>
+<a href="/hunt/{{mid}}" style="background:#c0392b;color:#fff;padding:8px 14px;border-radius:6px;text-decoration:none;font-weight:bold">НАПАСТЬ</a>
+</div>
+{% endfor %}
+<br><a href="/camp" style="color:#6bc4a2">← В лагерь</a>
+</div>
+    """, MONSTERS=MONSTERS, player_name=player_name)
 
-    return render_template_string('''
-    <div style="max-width:420px;margin:0 auto;background:#dcc89c;min-height:100vh;font-family:serif;border:4px solid #3d2a14">
-      <div style="background:#3d2a14;color:#ffcc66;display:flex;justify-content:space-between;padding:8px;font-size:13px"><span>Лагерь</span><span>Бой с {{mon.full}}</span><a href="/camp" style="color:#ffcc66;text-decoration:none">Сбежать</a></div>
-      
-      <div style="position:relative;height:260px;background:linear-gradient(#4a7c2e,#2a4a1a);border-bottom:4px solid #3d2a14;overflow:hidden">
-        <!-- Вот тут теперь имя персонажа -->
-        <div style="display:flex;justify-content:space-between;padding:6px;background:rgba(0,0,0,0.6);color:#fff;font-weight:bold;font-size:14px">
-          <span>{{player_name}} <span id="php">90</span>❤</span>
-          <span>{{mon.name}} <span id="ehp">{{mon.hp}}</span>❤</span>
-        </div>
-        <div style="position:absolute;bottom:0;width:100%;height:50px;background:#5a3a1a"></div>
-        <div id="hero" style="position:absolute;left:10px;bottom:15px;transition:0.2s"><img src="/static/hero_f.png" style="width:100px;background:#fff"></div>
-        <div id="enemy" style="position:absolute;right:15px;bottom:15px;transition:0.3s"><img src="/static/{{mon.img}}" style="width:95px;background:#fff"></div>
-        <div id="my_dmg" style="position:absolute;left:25%;top:70px;color:#ff0;font-size:36px;font-weight:bold;display:none;z-index:10">-10</div>
-        <div id="en_dmg" style="position:absolute;right:25%;top:70px;color:#f55;font-size:36px;font-weight:bold;display:none;z-index:10">-{{mon.dmg}}</div>
-        <div id="log" style="position:absolute;bottom:0;left:0;width:100%;text-align:center;background:rgba(0,0,0,0.8);color:#0f0;font-size:13px;padding:6px">Твой ход!</div>
-      </div>
-      <div style="background:#b89a6a;padding:12px"><div style="display:flex;justify-content:space-around;gap:8px">
-          <button id="b0" onclick="hit()" style="flex:1;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-weight:bold">⚔️<br><small>ГОЛОВА</small></button>
-          <button id="b1" onclick="hit()" style="flex:1;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-weight:bold">🗡️<br><small>ТЕЛО</small></button>
-          <button id="b2" onclick="hit()" style="flex:1;height:60px;background:#e8d5a3;border:3px outset #8b6d4a;border-radius:6px;font-weight:bold">⚔️<br><small>НОГИ</small></button>
-      </div></div>
-    </div>
-    <script>
-    let ehp={{mon.hp}}, php=90, pdmg=10, edmg={{mon.dmg}}, total=0, turn=true;
-    function hit(){
-      if(!turn) return; turn=false; b0.disabled=b1.disabled=b2.disabled=true;
-      let h=document.getElementById('hero'); h.style.transform='translateX(90px)'; setTimeout(()=>h.style.transform='',180);
-      setTimeout(()=>{
-        ehp-=pdmg; total+=pdmg; if(ehp<0) ehp=0; document.getElementById('ehp').innerText=ehp;
-        let d=document.getElementById('my_dmg'); d.innerText='-'+pdmg; d.style.display='block'; setTimeout(()=>d.style.display='none',700);
-        let e=document.getElementById('enemy'); e.style.transform='translateX(30px) scale(0.8)'; setTimeout(()=>e.style.transform='',300);
-        if(ehp<=0){ location.href='/hunt_result/grib?dmg='+total; return; }
-        setTimeout(enemyHit,800);
-      },180);
-    }
-    function enemyHit(){
-      let e=document.getElementById('enemy'); e.style.transform='translateX(-70px)'; setTimeout(()=>e.style.transform='',180);
-      setTimeout(()=>{
-        php-=edmg; if(php<0) php=0; document.getElementById('php').innerText=php;
-        let d=document.getElementById('en_dmg'); d.innerText='-'+edmg; d.style.display='block'; setTimeout(()=>d.style.display='none',700);
-        let h=document.getElementById('hero'); h.style.transform='translateX(-20px)'; setTimeout(()=>h.style.transform='',300);
-        if(php<=0){ location.href='/camp'; return; }
-        turn=true; b0.disabled=b1.disabled=b2.disabled=false;
-      },180);
-    }
-    </script>
-    ''', mon=mon, player_name=player_name)
+@app.route("/hunt/<mid>")
+def hunt_battle(mid):
+    if "uid" not in session:
+        return redirect("/")
+    mon = MONSTERS.get(mid)
+    if not mon:
+        return redirect("/hunt")
+    player_name = get_name(session["uid"])
+    return render_template_string("""
+<div style="padding:15px;background:#2a1e1e;min-height:100vh;color:#fff;text-align:center;font-family:sans-serif">
+<h2>Бой с {{mon.name}}!</h2>
+<div style="font-size:60px">👾</div>
+<div style="margin:15px 0">HP монстра: <b id="hp">{{mon.hp}}</b> / {{mon.hp}}</div>
+<div id="log" style="height:100px;overflow:auto;background:#0003;padding:5px;margin:10px 0;text-align:left"></div>
+<button id="btn" onclick="hit()" style="background:#c0392b;color:#fff;padding:12px 25px;border:0;border-radius:8px;font-size:18px">БИТЬ -10</button>
+<br><br><a href="/hunt" style="color:#aaa">Сбежать</a>
+<script>
+let hp = {{mon.hp}};
+let dmg = 0;
+function hit(){
+  let d = 10 + Math.floor(Math.random()*6);
+  hp -= d; dmg += d;
+  if(hp<0) hp=0;
+  document.getElementById('hp').innerText=hp;
+  document.getElementById('log').innerHTML += '-' + d + ' урона<br>';
+  if(hp<=0){
+    document.getElementById('btn').innerText='ПОБЕДА!';
+    setTimeout(()=>{ window.location='/hunt_result/{{mid}}?dmg='+dmg; }, 800);
+  }
+}
+</script>
+</div>
+    """, mon=mon, mid=mid, player_name=player_name)
+
 @app.route("/hunt")
 
 @app.route("/hunt_result/<mid>")
