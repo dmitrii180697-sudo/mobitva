@@ -349,6 +349,26 @@ def hunt():
 </div>
     """, MONSTERS=MONSTERS, player_name=player_name)
 
+@app.route("/hunt")
+@app.route("/promysel")
+def hunt():
+    if "uid" not in session:
+        return redirect("/")
+    player_name = get_name(session["uid"])
+    return render_template_string("""
+<div style="padding:12px;background:#d4ed9f;min-height:100vh;color:#222">
+<h3>Локация: Лес</h3>
+<p>Выбери монстра:</p>
+{% for mid, m in MONSTERS.items() %}
+<div style="background:#fff;border:1px solid #8ab04a;padding:10px;margin:8px 0;display:flex;justify-content:space-between">
+<span>{{m.name}} - HP {{m.hp}} Gold +{{m.gold}}</span>
+<a href="/hunt/{{mid}}" style="background:#e05a33;color:#fff;padding:6px 12px;text-decoration:none;border-radius:4px">НАПАСТЬ</a>
+</div>
+{% endfor %}
+<br><a href="/game">В лагерь</a>
+</div>
+    """, MONSTERS=MONSTERS, player_name=player_name)
+
 @app.route("/hunt/<mid>")
 def hunt_battle(mid):
     if "uid" not in session:
@@ -356,33 +376,53 @@ def hunt_battle(mid):
     mon = MONSTERS.get(mid)
     if not mon:
         return redirect("/hunt")
-    player_name = get_name(session["uid"])
     return render_template_string("""
-<div style="padding:15px;background:#2a1e1e;min-height:100vh;color:#fff;text-align:center;font-family:sans-serif">
+<div style="background:#3e2f22;min-height:100vh;color:#fff;text-align:center;padding:20px">
 <h2>Бой с {{mon.name}}!</h2>
-<div style="font-size:60px">👾</div>
-<div style="margin:15px 0">HP монстра: <b id="hp">{{mon.hp}}</b> / {{mon.hp}}</div>
-<div id="log" style="height:100px;overflow:auto;background:#0003;padding:5px;margin:10px 0;text-align:left"></div>
-<button id="btn" onclick="hit()" style="background:#c0392b;color:#fff;padding:12px 25px;border:0;border-radius:8px;font-size:18px">БИТЬ -10</button>
+<div style="font-size:50px">👹</div>
+<p>HP монстра: <span id="hp">{{mon.hp}}</span> / {{mon.hp}}</p>
+<div id="log" style="text-align:left;color:#ff0;height:80px"></div>
+<button onclick="hit()" style="background:#e05a33;color:#fff;padding:10px 20px;border:0;border-radius:5px">БИТЬ -10</button>
 <br><br><a href="/hunt" style="color:#aaa">Сбежать</a>
 <script>
-let hp = {{mon.hp}};
-let dmg = 0;
+let hp={{mon.hp}}; let dmg=0;
 function hit(){
-  let d = 10 + Math.floor(Math.random()*6);
-  hp -= d; dmg += d;
-  if(hp<0) hp=0;
+  let d=10+Math.floor(Math.random()*5);
+  hp-=d; dmg+=d; if(hp<0)hp=0;
   document.getElementById('hp').innerText=hp;
-  document.getElementById('log').innerHTML += '-' + d + ' урона<br>';
+  document.getElementById('log').innerHTML+='-'+d+' урона<br>';
   if(hp<=0){
-    document.getElementById('btn').innerText='ПОБЕДА!';
-    setTimeout(()=>{ window.location='/hunt_result/{{mid}}?dmg='+dmg; }, 800);
+    window.location='/hunt_result/{{mid}}?dmg='+dmg;
   }
 }
 </script>
 </div>
-    """, mon=mon, mid=mid, player_name=player_name)
+    """, mon=mon, mid=mid)
 
+@app.route("/hunt_result/<mid>")
+def hunt_result(mid):
+    if "uid" not in session:
+        return redirect("/")
+    mon = MONSTERS.get(mid, MONSTERS["grib"])
+    total_dmg = request.args.get("dmg", "33")
+    player_name = get_name(session["uid"])
+    try:
+        conn=get_db()
+        cur=conn.cursor()
+        cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["exp"], session["uid"],))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        return f"DB ERROR: {e}"
+    return render_template_string("""
+<div style="padding:15px;color:#fff;background:#2a2a2a;min-height:100vh;text-align:center">
+<h2>Победа! Ты убил {{mon.name}}</h2>
+<p>+{{mon.gold}} gold +{{mon.exp}} exp</p>
+<p>Урон: {{total_dmg}}</p>
+<a href="/hunt" style="color:#6bc4a2">Дальше бить</a> | <a href="/game" style="color:#6bc4a2">В лагерь</a>
+</div>
+    """, mon=mon, total_dmg=total_dmg, player_name=player_name)
 @app.route("/hunt")
 
 @app.route("/hunt_result/<mid>")
