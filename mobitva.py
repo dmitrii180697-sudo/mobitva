@@ -330,24 +330,6 @@ def get_name(uid):
     if login:
         return login
     return "Герой"
-@app.route("/hunt")
-def hunt():
-    if "uid" not in session:
-        return redirect("/")
-    player_name = get_name(session["uid"])
-    return render_template_string("""
-<div style="padding:12px;background:#1e2a1e;min-height:100vh;color:#fff;font-family:sans-serif">
-<h3 style="margin:0 0 10px 0">Локация: Лес 🌲</h3>
-<p>Выбери монстра:</p>
-{% for mid, m in MONSTERS.items() %}
-<div style="background:#2a3a2a;border:1px solid #3d5a3d;border-radius:10px;padding:12px;margin:10px 0;display:flex;justify-content:space-between;align-items:center">
-<div><b>{{m.name}}</b><br><small>HP {{m.hp}} | Gold +{{m.gold}}</small></div>
-<a href="/hunt/{{mid}}" style="background:#c0392b;color:#fff;padding:8px 14px;border-radius:6px;text-decoration:none;font-weight:bold">НАПАСТЬ</a>
-</div>
-{% endfor %}
-<br><a href="/camp" style="color:#6bc4a2">← В лагерь</a>
-</div>
-    """, MONSTERS=MONSTERS, player_name=player_name)
 
 @app.route("/hunt")
 @app.route("/promysel")
@@ -398,32 +380,6 @@ function hit(){
 </script>
 </div>
     """, mon=mon, mid=mid)
-
-@app.route("/hunt_result/<mid>")
-def hunt_result(mid):
-    if "uid" not in session:
-        return redirect("/")
-    mon = MONSTERS.get(mid, MONSTERS["grib"])
-    total_dmg = request.args.get("dmg", "33")
-    player_name = get_name(session["uid"])
-    try:
-        conn=get_db()
-        cur=conn.cursor()
-        cur.execute("UPDATE players SET gold=gold+%s, exp=exp+%s WHERE id=%s", (mon["gold"], mon["exp"], session["uid"],))
-        conn.commit()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        return f"DB ERROR: {e}"
-    return render_template_string("""
-<div style="padding:15px;color:#fff;background:#2a2a2a;min-height:100vh;text-align:center">
-<h2>Победа! Ты убил {{mon.name}}</h2>
-<p>+{{mon.gold}} gold +{{mon.exp}} exp</p>
-<p>Урон: {{total_dmg}}</p>
-<a href="/hunt" style="color:#6bc4a2">Дальше бить</a> | <a href="/game" style="color:#6bc4a2">В лагерь</a>
-</div>
-    """, mon=mon, total_dmg=total_dmg, player_name=player_name)
-@app.route("/hunt")
 
 @app.route("/hunt_result/<mid>")
 def hunt_result(mid):
